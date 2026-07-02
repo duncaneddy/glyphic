@@ -6,13 +6,14 @@ WebP, PDF, or EPS, and manage a library of past codes and reusable style templat
 
 ## Development
 
-- `npm install` — install dependencies
-- `npx tauri dev` — run the app with hot reload
-- `npm run test` — engine unit tests (Vitest)
-- `cd src-tauri && cargo test` — persistence and export tests
-- `npm run typecheck` — vue-tsc
-- `npx tauri build` — release bundles
-- `npm run icons` — regenerate placeholder icons (skips nothing; overwrites all)
+Uses [just](https://github.com/casey/just):
+
+- `just setup` — install dependencies
+- `just dev` — run the app with hot reload
+- `just test` — frontend + Rust tests
+- `just check` — typecheck + all tests (what CI runs)
+- `just build` — release bundles for this platform
+- `just icons` — regenerate placeholder icons (overwrites all)
 
 ## Replacing placeholder icons
 
