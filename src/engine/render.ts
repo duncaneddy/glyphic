@@ -47,7 +47,7 @@ export function renderSvg(config: QrConfig): RenderResult {
     }
   }
 
-  const fill = resolveFill(style.fill, fillId(style.fill), total);
+  const fill = resolveFill(style.fill, fillId(style.fill, total), total);
   const frameFill = style.customEyeColor ? escapeAttr(style.eyeFrameColor) : fill.ref;
   const ballFill = style.customEyeColor ? escapeAttr(style.eyeBallColor) : fill.ref;
   const eyeOrigins: Array<[number, number]> = [

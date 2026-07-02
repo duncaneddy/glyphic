@@ -15,14 +15,15 @@ export function escapeAttr(s: string): string {
 }
 
 /**
- * Derive a gradient id from the fill itself (djb2 hash of its JSON) so distinct
+ * Derive a gradient id from the fill and extent (djb2 hash of their JSON) so distinct
  * gradients never collide when many rendered SVGs are inlined into one document
  * (e.g. Library/Templates via v-html) — url(#id) resolves to the first match in
- * the document, not the nearest one. Identical fills colliding on the same id
- * is fine: they're identical gradients.
+ * the document, not the nearest one. Because gradients use gradientUnits="userSpaceOnUse"
+ * with coordinates computed from the extent, identical fills with different extents
+ * (different QR sizes) must have different ids to avoid geometry collision.
  */
-export function fillId(fill: Fill): string {
-  const s = JSON.stringify(fill);
+export function fillId(fill: Fill, extent: number): string {
+  const s = JSON.stringify(fill) + ":" + extent;
   let hash = 5381;
   for (let i = 0; i < s.length; i++) {
     hash = (hash * 33) ^ s.charCodeAt(i);

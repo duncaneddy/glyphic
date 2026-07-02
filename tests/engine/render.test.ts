@@ -50,13 +50,24 @@ describe("renderSvg", () => {
     expect(svgA).toContain(`url(#${idA})`);
   });
 
-  it("gives identical fills the same gradient id", () => {
-    const fillA = { type: "radial", from: "#123456", to: "#654321" } as const;
-    const fillB = { type: "radial", from: "#123456", to: "#654321" } as const;
-    const idA = renderSvg(cfg({ fill: fillA })).svg.match(/<radialGradient id="([^"]+)"/)?.[1];
-    const idB = renderSvg(cfg({ fill: fillB })).svg.match(/<radialGradient id="([^"]+)"/)?.[1];
+  it("gives identical fills with identical content the same gradient id", () => {
+    const fill = { type: "radial", from: "#123456", to: "#654321" } as const;
+    const url = "https://example.com/abc";
+    const idA = renderSvg(cfg({ fill }, url)).svg.match(/<radialGradient id="([^"]+)"/)?.[1];
+    const idB = renderSvg(cfg({ fill }, url)).svg.match(/<radialGradient id="([^"]+)"/)?.[1];
     expect(idA).toBeTruthy();
     expect(idA).toBe(idB);
+  });
+
+  it("gives identical fills with different content lengths different gradient ids", () => {
+    const fill = { type: "linear", from: "#000", to: "#fff", angleDeg: 45 } as const;
+    const shortUrl = "https://e.co";
+    const longUrl = "https://example.com/abc?very=long&url=with&many=parameters&to&change&qr&size";
+    const idShort = renderSvg(cfg({ fill }, shortUrl)).svg.match(/<linearGradient id="([^"]+)"/)?.[1];
+    const idLong = renderSvg(cfg({ fill }, longUrl)).svg.match(/<linearGradient id="([^"]+)"/)?.[1];
+    expect(idShort).toBeTruthy();
+    expect(idLong).toBeTruthy();
+    expect(idShort).not.toBe(idLong);
   });
 
   it("escapes a hostile background/eye color so no markup or attribute breakout survives", () => {
