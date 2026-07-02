@@ -24,8 +24,14 @@ async function doExport(format: ExportFormat) {
   status.value = "";
   try {
     const path = await exportAs(svg, format, editor.exportSize, suggestedName());
-    if (path) status.value = `Saved ${format.toUpperCase()}`;
-    if (path) await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
+    if (path) {
+      status.value = `Saved ${format.toUpperCase()}`;
+      try {
+        await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
+      } catch {
+        status.value += " (couldn't save to library)";
+      }
+    }
   } catch (e) {
     status.value = e instanceof Error ? e.message : String(e);
   }
@@ -38,7 +44,11 @@ async function doCopy(kind: "png" | "svg") {
     if (kind === "png") await copyPngToClipboard(svg, editor.exportSize);
     else await copySvgToClipboard(svg);
     status.value = `Copied ${kind.toUpperCase()} to clipboard`;
-    await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
+    try {
+      await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
+    } catch {
+      status.value += " (couldn't save to library)";
+    }
   } catch (e) {
     status.value = e instanceof Error ? e.message : String(e);
   }
