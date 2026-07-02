@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import CreateView from "./views/CreateView.vue";
+import LibraryView from "./views/LibraryView.vue";
 
 const view = ref<"create" | "library" | "templates">("create");
 const NAV = [
@@ -23,7 +24,7 @@ const NAV = [
     </nav>
     <main class="flex-1 overflow-hidden">
       <CreateView v-if="view === 'create'" />
-      <div v-else-if="view === 'library'" class="p-6 text-gray-400">Library — coming in Task 15</div>
+      <LibraryView v-else-if="view === 'library'" @edit="view = 'create'" />
       <div v-else class="p-6 text-gray-400">Templates — coming in Task 16</div>
     </main>
   </div>

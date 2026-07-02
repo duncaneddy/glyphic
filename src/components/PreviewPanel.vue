@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useEditorStore } from "../stores/editor";
+import { useLibraryStore } from "../stores/library";
 import { copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
 
 const editor = useEditorStore();
+const library = useLibraryStore();
 const SIZES = [256, 512, 1024, 2048, 4096];
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
 const READY: Set<ExportFormat> = new Set(["svg", "png", "jpeg", "webp"]); // pdf/eps enabled by Tasks 17–18
@@ -23,6 +25,7 @@ async function doExport(format: ExportFormat) {
   try {
     const path = await exportAs(svg, format, editor.exportSize, suggestedName());
     if (path) status.value = `Saved ${format.toUpperCase()}`;
+    if (path) await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
   } catch (e) {
     status.value = e instanceof Error ? e.message : String(e);
   }
@@ -35,6 +38,7 @@ async function doCopy(kind: "png" | "svg") {
     if (kind === "png") await copyPngToClipboard(svg, editor.exportSize);
     else await copySvgToClipboard(svg);
     status.value = `Copied ${kind.toUpperCase()} to clipboard`;
+    await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
   } catch (e) {
     status.value = e instanceof Error ? e.message : String(e);
   }
