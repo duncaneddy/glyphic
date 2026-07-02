@@ -17,10 +17,14 @@ Uses [just](https://github.com/casey/just):
 
 ## Replacing placeholder icons
 
-Every picker icon is a standalone file in `src/icons/` (24x24 viewBox,
+Shape-picker icons (body, eye frame, eyeball) are generated from the QR engine's
+own geometry (`src/lib/shape-previews.ts`), so each button always depicts exactly
+what that shape renders in a real QR code — there's nothing to replace.
+
+The remaining icons are standalone files in `src/icons/` (24x24 viewBox,
 `fill="currentColor"`). Replace a file, keep the name, and the UI picks it up:
-`body-<shape>.svg`, `eye-frame-<shape>.svg`, `eyeball-<shape>.svg`,
-`logo-preset-<name>.svg`, `action-<name>.svg`.
+`logo-preset-<name>.svg`, `action-<name>.svg`. `npm run icons` regenerates these
+8 placeholders (3 logo presets + 5 actions).
 
 ## Data
 
