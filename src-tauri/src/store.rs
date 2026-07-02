@@ -34,6 +34,12 @@ fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), String> {
     fs::rename(&tmp, path).map_err(|e| e.to_string())
 }
 
+/// Rejects empty ids and ids containing path separators or `..`, which would
+/// otherwise let a caller escape the templates/history directory.
+fn valid_id(id: &str) -> bool {
+    !id.is_empty() && !id.contains(['/', '\\']) && id != ".." && id != "."
+}
+
 // ---- pure, directory-parameterized logic ----
 
 pub fn list_templates_in(dir: &Path) -> Vec<Template> {
@@ -49,11 +55,17 @@ pub fn list_templates_in(dir: &Path) -> Vec<Template> {
 }
 
 pub fn save_template_in(dir: &Path, t: &Template) -> Result<(), String> {
+    if !valid_id(&t.id) {
+        return Err(format!("invalid template id: {}", t.id));
+    }
     let bytes = serde_json::to_vec_pretty(t).map_err(|e| e.to_string())?;
     write_atomic(&dir.join("templates").join(format!("{}.json", t.id)), &bytes)
 }
 
 pub fn delete_template_in(dir: &Path, id: &str) -> Result<(), String> {
+    if !valid_id(id) {
+        return Err(format!("invalid template id: {id}"));
+    }
     fs::remove_file(dir.join("templates").join(format!("{id}.json"))).map_err(|e| e.to_string())
 }
 
@@ -74,18 +86,28 @@ pub fn list_history_in(dir: &Path) -> Vec<HistoryEntry> {
 }
 
 pub fn save_history_entry_in(dir: &Path, entry: &HistoryEntry) -> Result<(), String> {
+    if !valid_id(&entry.id) {
+        return Err(format!("invalid history id: {}", entry.id));
+    }
     let folder = dir.join("history").join(&entry.id);
     let mut on_disk = entry.clone();
     let preview = on_disk.preview_svg.take();
     let bytes = serde_json::to_vec_pretty(&on_disk).map_err(|e| e.to_string())?;
     write_atomic(&folder.join("config.json"), &bytes)?;
-    if let Some(svg) = preview {
-        write_atomic(&folder.join("preview.svg"), svg.as_bytes())?;
+    match preview {
+        Some(svg) => write_atomic(&folder.join("preview.svg"), svg.as_bytes())?,
+        // Clear any stale preview left over from a previous save of this entry.
+        None => {
+            let _ = fs::remove_file(folder.join("preview.svg"));
+        }
     }
     Ok(())
 }
 
 pub fn delete_history_entry_in(dir: &Path, id: &str) -> Result<(), String> {
+    if !valid_id(id) {
+        return Err(format!("invalid history id: {id}"));
+    }
     fs::remove_dir_all(dir.join("history").join(id)).map_err(|e| e.to_string())
 }
 
@@ -201,5 +223,26 @@ mod tests {
         assert_eq!(get_settings_in(dir.path()), json!({}));
         set_settings_in(dir.path(), &json!({"lastStyle": {"x": 1}})).unwrap();
         assert_eq!(get_settings_in(dir.path())["lastStyle"]["x"], 1);
+    }
+
+    #[test]
+    fn rejects_path_traversal_ids() {
+        let dir = tempfile::tempdir().unwrap();
+        assert!(save_template_in(dir.path(), &tpl("../escaped")).is_err());
+        assert!(delete_template_in(dir.path(), "..").is_err());
+        assert!(delete_history_entry_in(dir.path(), "../../escaped").is_err());
+    }
+
+    #[test]
+    fn stale_preview_is_cleared_when_saved_without_one() {
+        let dir = tempfile::tempdir().unwrap();
+        let with_preview = HistoryEntry {
+            id: "x".into(), name: "x".into(), config: json!({"content": {}}),
+            created_at: "2026-01-01T00:00:00Z".into(), preview_svg: Some("<svg>x</svg>".into()),
+        };
+        save_history_entry_in(dir.path(), &with_preview).unwrap();
+        let without_preview = HistoryEntry { preview_svg: None, ..with_preview };
+        save_history_entry_in(dir.path(), &without_preview).unwrap();
+        assert_eq!(list_history_in(dir.path())[0].preview_svg, None);
     }
 }
