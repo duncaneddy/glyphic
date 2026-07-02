@@ -8,7 +8,7 @@ const editor = useEditorStore();
 const library = useLibraryStore();
 const SIZES = [256, 512, 1024, 2048, 4096];
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
-const READY: Set<ExportFormat> = new Set(["svg", "png", "jpeg", "webp", "pdf"]); // eps enabled by Task 18
+const READY: Set<ExportFormat> = new Set(["svg", "png", "jpeg", "webp", "pdf", "eps"]);
 const status = ref("");
 
 function suggestedName(): string {
