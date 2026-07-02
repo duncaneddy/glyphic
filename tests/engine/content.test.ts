@@ -64,4 +64,14 @@ describe("serializeContent", () => {
     expect(serializeContent({ type: "location", latitude: 37.42, longitude: -122.08 }))
       .toBe("geo:37.42,-122.08");
   });
+
+  it("location throws EngineError when latitude is cleared (v-model.number leaves \"\")", () => {
+    const cleared = { type: "location", latitude: "" as unknown as number, longitude: -122.08 } as const;
+    expect(() => serializeContent(cleared)).toThrow(EngineError);
+  });
+
+  it("location throws EngineError when longitude is not a finite number", () => {
+    expect(() => serializeContent({ type: "location", latitude: 37.42, longitude: NaN }))
+      .toThrow(EngineError);
+  });
 });

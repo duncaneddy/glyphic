@@ -59,6 +59,8 @@ export function serializeContent(content: QrContent): string {
       return lines.join("\r\n");
     }
     case "location":
+      if (!Number.isFinite(content.latitude) || !Number.isFinite(content.longitude))
+        throw new EngineError("Enter latitude and longitude.");
       return `geo:${content.latitude},${content.longitude}`;
   }
 }

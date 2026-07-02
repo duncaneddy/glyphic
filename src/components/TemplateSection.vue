@@ -8,6 +8,7 @@ const editor = useEditorStore();
 const library = useLibraryStore();
 const naming = ref(false);
 const newName = ref("");
+const error = ref("");
 
 onMounted(() => library.refresh());
 
@@ -19,22 +20,31 @@ function apply(id: string) {
 
 async function saveNew() {
   if (!newName.value.trim()) return;
-  await library.saveNewTemplate(newName.value.trim(), JSON.parse(JSON.stringify(editor.config.style)));
-  naming.value = false;
-  newName.value = "";
+  try {
+    await library.saveNewTemplate(newName.value.trim(), JSON.parse(JSON.stringify(editor.config.style)));
+    naming.value = false;
+    newName.value = "";
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : String(e);
+  }
 }
 
 async function updateCurrent() {
   if (!editor.editingTemplateId) return;
-  await library.updateTemplate(editor.editingTemplateId, {
-    style: JSON.parse(JSON.stringify(editor.config.style)),
-  });
-  editor.editingTemplateId = null;
+  try {
+    await library.updateTemplate(editor.editingTemplateId, {
+      style: JSON.parse(JSON.stringify(editor.config.style)),
+    });
+    editor.editingTemplateId = null;
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : String(e);
+  }
 }
 </script>
 
 <template>
   <SectionCard title="Template">
+    <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
     <div class="flex items-center gap-2 text-sm">
       <select class="flex-1 rounded border border-gray-300 px-2 py-1.5"
         @change="apply(($event.target as HTMLSelectElement).value)">

@@ -3,7 +3,7 @@ import { onMounted, ref } from "vue";
 import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
 import type { HistoryEntry, QrConfig } from "../engine/types";
-import { copyPngToClipboard } from "../lib/exporter";
+import { copyPngToClipboard, exportAs } from "../lib/exporter";
 
 const library = useLibraryStore();
 const editor = useEditorStore();
@@ -20,7 +20,24 @@ function openInEditor(entry: HistoryEntry) {
 
 async function copy(entry: HistoryEntry) {
   try {
-    if (entry.previewSvg) await copyPngToClipboard(entry.previewSvg, 1024);
+    if (!entry.previewSvg) {
+      error.value = "No preview available for this entry.";
+      return;
+    }
+    await copyPngToClipboard(entry.previewSvg, 1024);
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : String(e);
+  }
+}
+
+async function exportSvg(entry: HistoryEntry) {
+  try {
+    if (!entry.previewSvg) {
+      error.value = "No preview available for this entry.";
+      return;
+    }
+    const name = entry.name.replace(/[^a-zA-Z0-9.-]+/g, "-").slice(0, 40);
+    await exportAs(entry.previewSvg, "svg", 1024, name);
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
@@ -51,6 +68,7 @@ async function remove(entry: HistoryEntry) {
         <div class="mt-2 flex gap-2 text-xs">
           <button class="text-blue-600 hover:underline" @click="openInEditor(entry)">Edit</button>
           <button class="text-blue-600 hover:underline" @click="copy(entry)">Copy PNG</button>
+          <button class="text-blue-600 hover:underline" @click="exportSvg(entry)">Export SVG</button>
           <button class="ml-auto text-red-500 hover:underline"
             @click="remove(entry)">Delete</button>
         </div>
