@@ -3,6 +3,7 @@ import { computeMatrix } from "./matrix";
 import { resolveFill } from "./fills";
 import { bodyModulePath } from "./body-shapes";
 import { eyeBallPath, eyeFramePath } from "./eye-shapes";
+import { logoElement, logoLayout } from "./logo";
 import type { QrConfig } from "./types";
 
 export interface RenderResult { svg: string; warnings: string[] }
@@ -15,8 +16,23 @@ export function renderSvg(config: QrConfig): RenderResult {
   const q = style.quietZone;
   const total = m.size + 2 * q;
 
+  const layout = style.logo ? logoLayout(style.logo, total) : null;
+  if (layout?.warning) warnings.push(layout.warning);
+
+  // A module is knocked out when its center (+0.5 margin) falls inside the logo box.
+  const knocked = (r: number, c: number): boolean => {
+    if (!layout || !style.logo?.knockout) return false;
+    const cx = c + style.quietZone + 0.5;
+    const cy = r + style.quietZone + 0.5;
+    return (
+      cx > layout.x - 0.5 && cx < layout.x + layout.size + 0.5 &&
+      cy > layout.y - 0.5 && cy < layout.y + layout.size + 0.5
+    );
+  };
+
   const solidAt = (r: number, c: number): boolean =>
-    r >= 0 && r < m.size && c >= 0 && c < m.size && m.isDark(r, c) && !m.isFinder(r, c);
+    r >= 0 && r < m.size && c >= 0 && c < m.size &&
+    m.isDark(r, c) && !m.isFinder(r, c) && !knocked(r, c);
 
   let bodyD = "";
   for (let r = 0; r < m.size; r++) {
@@ -55,6 +71,7 @@ export function renderSvg(config: QrConfig): RenderResult {
     bg +
     `<path fill="${fill.ref}" d="${bodyD}"/>` +
     eyes +
+    (layout && style.logo ? logoElement(style.logo, layout) : "") +
     `</svg>`;
 
   return { svg, warnings };
