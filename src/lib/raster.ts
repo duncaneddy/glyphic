@@ -6,6 +6,42 @@ export function withExplicitSize(svg: string, px: number): string {
   });
 }
 
+/** Load an image from a URL/data URI, rejecting with `errorMessage` on failure. */
+function loadImage(src: string, errorMessage: string): Promise<HTMLImageElement> {
+  const img = new Image();
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(errorMessage));
+    img.src = src;
+  });
+}
+
+const LOGO_SVG_HREF_RE = /(<image[^>]*href=")(data:image\/svg\+xml[^"]*)(")/;
+
+/** Swap an embedded `data:image/svg+xml` logo href for `replacementHref`, unchanged otherwise. */
+export function replaceSvgLogoHref(svg: string, replacementHref: string): string {
+  return svg.replace(LOGO_SVG_HREF_RE, `$1${replacementHref}$3`);
+}
+
+/**
+ * EPS export only supports raster images. Rasterize an embedded SVG logo (preset
+ * or SVG upload) to a PNG data URI before handing the SVG to the EPS emitter.
+ * No-op when there's no svg-data-URI logo to rasterize.
+ */
+export async function rasterizeSvgLogo(svg: string, px = 1024): Promise<string> {
+  const match = svg.match(LOGO_SVG_HREF_RE);
+  if (!match) return svg;
+
+  const img = await loadImage(match[2], "Could not rasterize the logo.");
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = px;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas is unavailable.");
+  ctx.drawImage(img, 0, 0, px, px);
+
+  return replaceSvgLogoHref(svg, canvas.toDataURL("image/png"));
+}
+
 export async function svgToRaster(
   svg: string,
   px: number,
@@ -14,12 +50,7 @@ export async function svgToRaster(
   const sized = withExplicitSize(svg, px);
   const url = URL.createObjectURL(new Blob([sized], { type: "image/svg+xml" }));
   try {
-    const img = new Image();
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = () => reject(new Error("Could not rasterize the SVG."));
-      img.src = url;
-    });
+    const img = await loadImage(url, "Could not rasterize the SVG.");
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = px;
     const ctx = canvas.getContext("2d");

@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeImage, writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { Image } from "@tauri-apps/api/image";
-import { svgToRaster } from "./raster";
+import { rasterizeSvgLogo, svgToRaster } from "./raster";
 
 export type ExportFormat = "svg" | "png" | "jpeg" | "webp" | "pdf" | "eps";
 
@@ -27,7 +27,12 @@ export async function exportAs(
   if (format === "svg") {
     await invoke("write_file", { path, contents: Array.from(new TextEncoder().encode(svg)) });
   } else if (format === "pdf" || format === "eps") {
-    await invoke("export_vector", { svg, format, path });
+    // The EPS emitter only supports raster images; SVG-sourced logos (presets, SVG uploads)
+    // must be rasterized first, or export always fails for them.
+    const vectorSvg = format === "eps" && svg.includes("data:image/svg+xml")
+      ? await rasterizeSvgLogo(svg)
+      : svg;
+    await invoke("export_vector", { svg: vectorSvg, format, path });
   } else {
     const bytes = await svgToRaster(svg, sizePx, MIME[format]);
     await invoke("write_file", { path, contents: Array.from(bytes) });
