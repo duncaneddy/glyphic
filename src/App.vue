@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import CreateView from "./views/CreateView.vue";
 import LibraryView from "./views/LibraryView.vue";
 import TemplatesView from "./views/TemplatesView.vue";
+import { getSettings } from "./lib/ipc";
+import { useEditorStore } from "./stores/editor";
 
 const view = ref<"create" | "library" | "templates">("create");
 const NAV = [
@@ -10,6 +12,16 @@ const NAV = [
   { id: "library", label: "Library" },
   { id: "templates", label: "Templates" },
 ] as const;
+
+const editor = useEditorStore();
+onMounted(async () => {
+  try {
+    const s = await getSettings();
+    if (s.lastStyle) editor.applyStyle(s.lastStyle);
+  } catch {
+    /* first launch or missing backend — keep defaults */
+  }
+});
 </script>
 
 <template>

@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useEditorStore } from "../stores/editor";
 import { useLibraryStore } from "../stores/library";
 import { copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
+import { setSettings } from "../lib/ipc";
 
 const editor = useEditorStore();
 const library = useLibraryStore();
@@ -28,6 +29,7 @@ async function doExport(format: ExportFormat) {
       status.value = `Saved ${format.toUpperCase()}`;
       try {
         await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
+        await setSettings({ lastStyle: JSON.parse(JSON.stringify(editor.config.style)) });
       } catch {
         status.value += " (couldn't save to library)";
       }
@@ -46,6 +48,7 @@ async function doCopy(kind: "png" | "svg") {
     status.value = `Copied ${kind.toUpperCase()} to clipboard`;
     try {
       await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
+      await setSettings({ lastStyle: JSON.parse(JSON.stringify(editor.config.style)) });
     } catch {
       status.value += " (couldn't save to library)";
     }
