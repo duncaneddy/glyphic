@@ -23,6 +23,7 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "2.11.3", features = ["image-png"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-clipboard-manager = "2"
+svg2pdf = "0.13"
 
 [dev-dependencies]
 tempfile = "3"
