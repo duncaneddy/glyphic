@@ -14,6 +14,7 @@ onMounted(() => library.refresh());
 
 function openInEditor(entry: HistoryEntry) {
   editor.loadConfig(entry.config as QrConfig);
+  editor.editingTemplateId = null;
   emit("edit");
 }
 
