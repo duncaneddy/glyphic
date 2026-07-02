@@ -38,4 +38,11 @@ describe("logo", () => {
     })).svg;
     expect(decodeSvg(withLogo, 768)).toBe("https://example.com/abc");
   });
+
+  it("escapes a hostile logo src so it can't break out of the href attribute", () => {
+    const hostile = 'data:image/png;base64,x"/><script>alert(1)</script>';
+    const { svg } = renderSvg(cfg({ logo: { src: hostile, sizeRatio: 0.2, knockout: true }, ecLevel: "H" }));
+    expect(svg).not.toContain("<script>");
+    expect(svg).not.toContain('x"/>');
+  });
 });

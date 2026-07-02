@@ -38,4 +38,44 @@ describe("renderSvg", () => {
   it("dots body shape still decodes", () => {
     expect(decodeSvg(renderSvg(cfg({ bodyShape: "dots" })).svg)).toBe("https://example.com/abc");
   });
+
+  it("gives distinct gradients distinct ids so inlined SVGs don't collide on url(#glyphic-fill)", () => {
+    const svgA = renderSvg(cfg({ fill: { type: "linear", from: "#000", to: "#fff", angleDeg: 0 } })).svg;
+    const svgB = renderSvg(cfg({ fill: { type: "linear", from: "#111", to: "#eee", angleDeg: 0 } })).svg;
+    const idA = svgA.match(/<linearGradient id="([^"]+)"/)?.[1];
+    const idB = svgB.match(/<linearGradient id="([^"]+)"/)?.[1];
+    expect(idA).toBeTruthy();
+    expect(idB).toBeTruthy();
+    expect(idA).not.toBe(idB);
+    expect(svgA).toContain(`url(#${idA})`);
+  });
+
+  it("gives identical fills the same gradient id", () => {
+    const fillA = { type: "radial", from: "#123456", to: "#654321" } as const;
+    const fillB = { type: "radial", from: "#123456", to: "#654321" } as const;
+    const idA = renderSvg(cfg({ fill: fillA })).svg.match(/<radialGradient id="([^"]+)"/)?.[1];
+    const idB = renderSvg(cfg({ fill: fillB })).svg.match(/<radialGradient id="([^"]+)"/)?.[1];
+    expect(idA).toBeTruthy();
+    expect(idA).toBe(idB);
+  });
+
+  it("escapes a hostile background/eye color so no markup or attribute breakout survives", () => {
+    const hostile = '"/><image href=x onerror=alert(1)>';
+    const { svg } = renderSvg(cfg({
+      background: hostile,
+      customEyeColor: true,
+      eyeFrameColor: hostile,
+      eyeBallColor: hostile,
+    }));
+    expect(svg).not.toContain("<image href=x");
+    expect(svg).not.toContain(hostile);
+    expect(svg).toContain("&quot;/&gt;&lt;image href=x onerror=alert(1)&gt;");
+  });
+
+  it("escapes hostile gradient stop colors", () => {
+    const hostile = '"/><image href=x onerror=alert(1)>';
+    const { svg } = renderSvg(cfg({ fill: { type: "linear", from: hostile, to: "#fff", angleDeg: 0 } }));
+    expect(svg).not.toContain("<image href=x");
+    expect(svg).not.toContain(hostile);
+  });
 });

@@ -1,6 +1,6 @@
 import { serializeContent } from "./content";
 import { computeMatrix } from "./matrix";
-import { resolveFill } from "./fills";
+import { escapeAttr, fillId, resolveFill } from "./fills";
 import { bodyModulePath } from "./body-shapes";
 import { eyeBallPath, eyeFramePath } from "./eye-shapes";
 import { logoElement, logoLayout } from "./logo";
@@ -47,9 +47,9 @@ export function renderSvg(config: QrConfig): RenderResult {
     }
   }
 
-  const fill = resolveFill(style.fill, "glyphic-fill", total);
-  const frameFill = style.customEyeColor ? style.eyeFrameColor : fill.ref;
-  const ballFill = style.customEyeColor ? style.eyeBallColor : fill.ref;
+  const fill = resolveFill(style.fill, fillId(style.fill), total);
+  const frameFill = style.customEyeColor ? escapeAttr(style.eyeFrameColor) : fill.ref;
+  const ballFill = style.customEyeColor ? escapeAttr(style.eyeBallColor) : fill.ref;
   const eyeOrigins: Array<[number, number]> = [
     [q, q],                      // top-left
     [q + m.size - 7, q],         // top-right
@@ -62,7 +62,7 @@ export function renderSvg(config: QrConfig): RenderResult {
     .join("");
 
   const bg = style.background
-    ? `<rect width="${total}" height="${total}" fill="${style.background}"/>`
+    ? `<rect width="${total}" height="${total}" fill="${escapeAttr(style.background)}"/>`
     : "";
 
   const svg =

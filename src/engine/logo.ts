@@ -1,3 +1,4 @@
+import { escapeAttr } from "./fills";
 import type { LogoStyle } from "./types";
 
 export interface LogoLayout { x: number; y: number; size: number; warning?: string }
@@ -13,5 +14,5 @@ export function logoLayout(logo: LogoStyle, total: number): LogoLayout {
 }
 
 export function logoElement(logo: LogoStyle, l: LogoLayout): string {
-  return `<image href="${logo.src}" x="${l.x}" y="${l.y}" width="${l.size}" height="${l.size}" preserveAspectRatio="xMidYMid meet"/>`;
+  return `<image href="${escapeAttr(logo.src)}" x="${l.x}" y="${l.y}" width="${l.size}" height="${l.size}" preserveAspectRatio="xMidYMid meet"/>`;
 }
