@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import * as ipc from "../lib/ipc";
-import type { HistoryEntry, QrConfig, Template } from "../engine/types";
+import type { HistoryEntry, QrConfig, QrStyle, Template } from "../engine/types";
 
 export function summarizeContent(config: QrConfig): string {
   const c = config.content;
@@ -42,5 +42,41 @@ export const useLibraryStore = defineStore("library", () => {
     await refresh();
   }
 
-  return { templates, history, refresh, recordHistory, removeHistory };
+  async function saveNewTemplate(name: string, style: QrStyle) {
+    const now = new Date().toISOString();
+    await ipc.saveTemplate({ id: crypto.randomUUID(), name, style, createdAt: now, updatedAt: now });
+    await refresh();
+  }
+
+  async function updateTemplate(id: string, patch: { name?: string; style?: QrStyle }) {
+    const existing = templates.value.find((t) => t.id === id);
+    if (!existing) return;
+    await ipc.saveTemplate({ ...existing, ...patch, updatedAt: new Date().toISOString() });
+    await refresh();
+  }
+
+  async function duplicateTemplate(id: string) {
+    const existing = templates.value.find((t) => t.id === id);
+    if (!existing) return;
+    const now = new Date().toISOString();
+    await ipc.saveTemplate({ ...existing, id: crypto.randomUUID(), name: `${existing.name} copy`, createdAt: now, updatedAt: now });
+    await refresh();
+  }
+
+  async function removeTemplate(id: string) {
+    await ipc.deleteTemplate(id);
+    await refresh();
+  }
+
+  return {
+    templates,
+    history,
+    refresh,
+    recordHistory,
+    removeHistory,
+    saveNewTemplate,
+    updateTemplate,
+    duplicateTemplate,
+    removeTemplate,
+  };
 });

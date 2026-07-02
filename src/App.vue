@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import CreateView from "./views/CreateView.vue";
 import LibraryView from "./views/LibraryView.vue";
+import TemplatesView from "./views/TemplatesView.vue";
 
 const view = ref<"create" | "library" | "templates">("create");
 const NAV = [
@@ -25,7 +26,7 @@ const NAV = [
     <main class="flex-1 overflow-hidden">
       <CreateView v-if="view === 'create'" />
       <LibraryView v-else-if="view === 'library'" @edit="view = 'create'" />
-      <div v-else class="p-6 text-gray-400">Templates — coming in Task 16</div>
+      <TemplatesView v-else @edit="view = 'create'" />
     </main>
   </div>
 </template>
