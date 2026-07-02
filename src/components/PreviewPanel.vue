@@ -1,7 +1,44 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useEditorStore } from "../stores/editor";
+import { copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
+
 const editor = useEditorStore();
 const SIZES = [256, 512, 1024, 2048, 4096];
+const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
+const READY: Set<ExportFormat> = new Set(["svg", "png", "jpeg", "webp"]); // pdf/eps enabled by Tasks 17–18
+const status = ref("");
+
+function suggestedName(): string {
+  const c = editor.config.content;
+  const base =
+    c.type === "url" ? c.url.replace(/^https?:\/\//, "").split(/[/?#]/)[0] || "qr" : `qr-${c.type}`;
+  return base.replace(/[^a-zA-Z0-9.-]+/g, "-").slice(0, 40);
+}
+
+async function doExport(format: ExportFormat) {
+  const svg = editor.rendered.result?.svg;
+  if (!svg) return;
+  status.value = "";
+  try {
+    const path = await exportAs(svg, format, editor.exportSize, suggestedName());
+    if (path) status.value = `Saved ${format.toUpperCase()}`;
+  } catch (e) {
+    status.value = e instanceof Error ? e.message : String(e);
+  }
+}
+
+async function doCopy(kind: "png" | "svg") {
+  const svg = editor.rendered.result?.svg;
+  if (!svg) return;
+  try {
+    if (kind === "png") await copyPngToClipboard(svg, editor.exportSize);
+    else await copySvgToClipboard(svg);
+    status.value = `Copied ${kind.toUpperCase()} to clipboard`;
+  } catch (e) {
+    status.value = e instanceof Error ? e.message : String(e);
+  }
+}
 </script>
 
 <template>
@@ -24,10 +61,20 @@ const SIZES = [256, 512, 1024, 2048, 4096];
     </label>
 
     <div class="grid grid-cols-3 gap-2" data-testid="export-buttons">
-      <button v-for="fmt in ['SVG', 'PNG', 'JPEG', 'WebP', 'PDF', 'EPS']" :key="fmt" disabled
-        class="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-400">
-        {{ fmt }}
+      <button v-for="fmt in FORMATS" :key="fmt" :disabled="!READY.has(fmt) || !editor.rendered.result"
+        class="rounded border px-3 py-1.5 text-sm"
+        :class="READY.has(fmt) && editor.rendered.result
+          ? 'border-gray-400 hover:bg-gray-100' : 'border-gray-200 text-gray-300'"
+        @click="doExport(fmt)">
+        {{ fmt.toUpperCase() }}
       </button>
     </div>
+    <div class="flex gap-2">
+      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100"
+        :disabled="!editor.rendered.result" @click="doCopy('png')">Copy PNG</button>
+      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100"
+        :disabled="!editor.rendered.result" @click="doCopy('svg')">Copy SVG</button>
+    </div>
+    <p v-if="status" class="text-xs text-gray-500">{{ status }}</p>
   </div>
 </template>
