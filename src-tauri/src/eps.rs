@@ -27,15 +27,11 @@ fn emit_group(group: &usvg::Group, h: f32, out: &mut String) -> Result<(), Strin
     Ok(())
 }
 
-/// Path segments from usvg are already in absolute (canvas) coordinates, so we
-/// only flip the y-axis to PostScript's bottom-left origin. No transform is
-/// re-applied here or the coordinates would be transformed twice.
-fn flip(x: f32, y: f32, h: f32) -> (f32, f32) {
-    (x, h - y)
-}
-
 /// Apply a transform to a point, then flip to PostScript's bottom-left origin.
-/// Used for gradient/paint coordinates, which are NOT pre-transformed by usvg.
+/// Used for both path geometry and gradient/paint coordinates: usvg's
+/// `Path::data()` is in the element's LOCAL coordinate space ("absolute" in
+/// usvg's docs means absolute path commands, not device space), so the
+/// node's `abs_transform()` must be applied before the y-flip.
 fn xform_flip(x: f32, y: f32, h: f32, t: usvg::Transform) -> (f32, f32) {
     let tx = t.sx * x + t.kx * y + t.tx;
     let ty = t.ky * x + t.sy * y + t.ty;
@@ -43,31 +39,32 @@ fn xform_flip(x: f32, y: f32, h: f32, t: usvg::Transform) -> (f32, f32) {
 }
 
 fn path_construction(p: &usvg::Path, h: f32) -> String {
+    let t = p.abs_transform();
     let mut d = String::from("newpath\n");
     let mut last = (0f32, 0f32);
     for seg in p.data().segments() {
         match seg {
             PathSegment::MoveTo(pt) => {
-                last = flip(pt.x, pt.y, h);
+                last = xform_flip(pt.x, pt.y, h, t);
                 let _ = writeln!(d, "{:.4} {:.4} moveto", last.0, last.1);
             }
             PathSegment::LineTo(pt) => {
-                last = flip(pt.x, pt.y, h);
+                last = xform_flip(pt.x, pt.y, h, t);
                 let _ = writeln!(d, "{:.4} {:.4} lineto", last.0, last.1);
             }
             PathSegment::QuadTo(c, pt) => {
                 // elevate quadratic to cubic
-                let cq = flip(c.x, c.y, h);
-                let end = flip(pt.x, pt.y, h);
+                let cq = xform_flip(c.x, c.y, h, t);
+                let end = xform_flip(pt.x, pt.y, h, t);
                 let c1 = (last.0 + 2.0 / 3.0 * (cq.0 - last.0), last.1 + 2.0 / 3.0 * (cq.1 - last.1));
                 let c2 = (end.0 + 2.0 / 3.0 * (cq.0 - end.0), end.1 + 2.0 / 3.0 * (cq.1 - end.1));
                 let _ = writeln!(d, "{:.4} {:.4} {:.4} {:.4} {:.4} {:.4} curveto", c1.0, c1.1, c2.0, c2.1, end.0, end.1);
                 last = end;
             }
             PathSegment::CubicTo(c1, c2, pt) => {
-                let a = flip(c1.x, c1.y, h);
-                let b = flip(c2.x, c2.y, h);
-                let end = flip(pt.x, pt.y, h);
+                let a = xform_flip(c1.x, c1.y, h, t);
+                let b = xform_flip(c2.x, c2.y, h, t);
+                let end = xform_flip(pt.x, pt.y, h, t);
                 let _ = writeln!(d, "{:.4} {:.4} {:.4} {:.4} {:.4} {:.4} curveto", a.0, a.1, b.0, b.1, end.0, end.1);
                 last = end;
             }
@@ -96,7 +93,7 @@ fn emit_path(p: &usvg::Path, h: f32, out: &mut String) -> Result<(), String> {
     };
     // Gradient paint coordinates live in the element's local user space; compose
     // the path's absolute transform with the gradient's own transform so the
-    // shading lands in the same absolute space as the (already-absolute) geometry.
+    // shading lands in the same absolute space as the transformed geometry.
     let abs = p.abs_transform();
     match fill.paint() {
         Paint::Color(c) => {
@@ -167,6 +164,16 @@ mod tests {
 
     const SOLID: &str = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33"><rect width="33" height="33" fill="#ffffff"/><path fill="#112233" d="M4,4h1v1h-1Z"/></svg>"##;
     const GRADIENT: &str = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33"><defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" y1="16.5" x2="33" y2="16.5"><stop offset="0" stop-color="#000000"/><stop offset="1" stop-color="#ff0000"/></linearGradient></defs><path fill="url(#g)" d="M4,4h1v1h-1Z"/></svg>"##;
+    const SOLID_TRANSFORMED: &str = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33"><rect width="33" height="33" fill="#ffffff"/><g transform="translate(5,0)"><path fill="#112233" d="M4,4h1v1h-1Z"/></g></svg>"##;
+
+    /// Pulls the x-coordinate out of the last "N N moveto" line in an EPS body
+    /// (the background rect in SOLID emits its own moveto first, so we want the
+    /// one belonging to the small foreground path).
+    fn last_moveto_x(eps: &str) -> f32 {
+        let line = eps.lines().rev().find(|l| l.trim_end().ends_with("moveto")).expect("no moveto in output");
+        let x: f32 = line.split_whitespace().next().expect("empty moveto line").parse().expect("non-numeric moveto x");
+        x
+    }
 
     #[test]
     fn eps_has_valid_dsc_structure() {
@@ -189,6 +196,16 @@ mod tests {
         // Path at SVG y=4 (top) must land near PS y=28 (33 - 4 - 1) in the output.
         let eps = svg_to_eps(SOLID).unwrap();
         assert!(eps.contains("29") || eps.contains("28"), "expected flipped y coordinates:\n{eps}");
+    }
+
+    #[test]
+    fn eps_applies_group_transform_to_path_geometry() {
+        // A <g transform="translate(5,0)"> around the path must shift the emitted
+        // moveto x-coordinate by 5, proving abs_transform() is applied to geometry.
+        let plain = svg_to_eps(SOLID).unwrap();
+        let transformed = svg_to_eps(SOLID_TRANSFORMED).unwrap();
+        let dx = last_moveto_x(&transformed) - last_moveto_x(&plain);
+        assert!((dx - 5.0).abs() < 1e-3, "expected moveto x shifted by 5, got dx={dx}");
     }
 
     #[test]
