@@ -2,6 +2,8 @@
 import PreviewPanel from "../components/PreviewPanel.vue";
 import ContentSection from "../components/ContentSection.vue";
 import ColorSection from "../components/ColorSection.vue";
+import LogoSection from "../components/LogoSection.vue";
+import ShapeSection from "../components/ShapeSection.vue";
 </script>
 
 <template>
@@ -10,6 +12,8 @@ import ColorSection from "../components/ColorSection.vue";
       <!-- ContentSection / ColorSection / LogoSection / ShapeSection / TemplateSection mount here -->
       <ContentSection />
       <ColorSection />
+      <LogoSection />
+      <ShapeSection />
     </div>
     <aside class="w-80 shrink-0">
       <PreviewPanel />
