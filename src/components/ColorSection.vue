@@ -33,17 +33,17 @@ function setMode(mode: Fill["type"]) {
       </button>
     </div>
 
-    <div class="flex flex-wrap items-center gap-4 text-sm">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
       <template v-if="editor.config.style.fill.type === 'solid'">
-        <label class="flex items-center gap-2">Color
+        <label class="inline-flex items-center gap-2">Color
           <ColorInput v-model="editor.config.style.fill.color" /></label>
       </template>
       <template v-else>
-        <label class="flex items-center gap-2">From
+        <label class="inline-flex items-center gap-2">From
           <ColorInput v-model="editor.config.style.fill.from" /></label>
-        <label class="flex items-center gap-2">To
+        <label class="inline-flex items-center gap-2">To
           <ColorInput v-model="editor.config.style.fill.to" /></label>
-        <label v-if="editor.config.style.fill.type === 'linear'" class="flex items-center gap-2">
+        <label v-if="editor.config.style.fill.type === 'linear'" class="inline-flex items-center gap-2">
           Angle
           <input v-model.number="editor.config.style.fill.angleDeg" type="range" min="0" max="360" />
           <span class="w-9 text-xs tabular-nums">{{ editor.config.style.fill.angleDeg }}°</span>
@@ -51,8 +51,8 @@ function setMode(mode: Fill["type"]) {
       </template>
     </div>
 
-    <div class="flex items-center gap-4 border-t border-gray-100 pt-3 text-sm">
-      <label class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-gray-100 pt-3 text-sm">
+      <label class="inline-flex items-center gap-2">
         <input type="checkbox" :checked="editor.config.style.background !== null"
           @change="editor.config.style.background =
             ($event.target as HTMLInputElement).checked ? '#ffffff' : null" />
@@ -66,10 +66,10 @@ function setMode(mode: Fill["type"]) {
       <label class="flex items-center gap-2">
         <input v-model="editor.config.style.customEyeColor" type="checkbox" /> Custom eye color
       </label>
-      <div v-if="editor.config.style.customEyeColor" class="flex gap-4">
-        <label class="flex items-center gap-2">Frame
+      <div v-if="editor.config.style.customEyeColor" class="flex flex-wrap gap-x-4 gap-y-2">
+        <label class="inline-flex items-center gap-2">Frame
           <ColorInput v-model="editor.config.style.eyeFrameColor" /></label>
-        <label class="flex items-center gap-2">Ball
+        <label class="inline-flex items-center gap-2">Ball
           <ColorInput v-model="editor.config.style.eyeBallColor" /></label>
       </div>
     </div>

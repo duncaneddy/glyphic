@@ -12,6 +12,6 @@ function onText(e: Event) {
     <input type="color" :value="modelValue" class="h-7 w-9 cursor-pointer rounded border border-gray-300"
       @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
     <input type="text" :value="modelValue" size="7"
-      class="rounded border border-gray-300 px-1.5 py-0.5 font-mono text-xs" @change="onText" />
+      class="min-w-0 rounded border border-gray-300 px-1.5 py-0.5 font-mono text-xs" @change="onText" />
   </span>
 </template>

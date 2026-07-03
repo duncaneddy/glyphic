@@ -123,12 +123,14 @@ async function importTemplate() {
           @keydown.enter="commitRename(t)" @blur="commitRename(t)" />
         <p v-else class="truncate text-sm font-medium" :title="t.name"
           @dblclick="renaming = t.id; renameText = t.name">{{ t.name }}</p>
-        <div class="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-xs">
+        <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
           <button class="text-blue-600 hover:underline" @click="editInEditor(t)">Edit</button>
           <button class="text-blue-600 hover:underline"
             @click="renaming = t.id; renameText = t.name">Rename</button>
           <button class="text-blue-600 hover:underline" @click="duplicate(t)">Duplicate</button>
           <button class="text-blue-600 hover:underline" @click="exportTemplate(t)">Export</button>
+        </div>
+        <div class="mt-2 flex justify-end text-xs">
           <button class="text-red-500 hover:underline" @click="remove(t)">Delete</button>
         </div>
       </div>

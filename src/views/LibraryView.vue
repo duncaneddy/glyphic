@@ -84,19 +84,21 @@ async function remove(entry: HistoryEntry) {
         <div class="mb-2 aspect-square [&>svg]:h-full [&>svg]:w-full" v-html="entry.previewSvg" />
         <p class="truncate text-sm font-medium" :title="entry.name">{{ entry.name }}</p>
         <p class="text-xs text-gray-400">{{ new Date(entry.createdAt).toLocaleString() }}</p>
-        <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-          <button class="text-blue-600 hover:underline" @click="openInEditor(entry)">Edit</button>
-          <select class="rounded border border-gray-300 px-1 py-0.5 text-xs"
+        <div class="mt-2 flex items-center gap-2 text-xs">
+          <select class="flex-1 min-w-0 rounded border border-gray-300 px-1 py-0.5 text-xs"
             :value="formatFor(entry.id)"
             @change="setFormat(entry.id, ($event.target as HTMLSelectElement).value as ExportFormat)">
             <option v-for="fmt in FORMATS" :key="fmt" :value="fmt">{{ fmt.toUpperCase() }}</option>
           </select>
-          <button class="text-blue-600 hover:underline" @click="save(entry)">Save</button>
-          <button class="text-blue-600 hover:underline disabled:pointer-events-none disabled:text-gray-300"
+          <button class="shrink-0 text-blue-600 hover:underline" @click="save(entry)">Save</button>
+          <button class="shrink-0 text-blue-600 hover:underline disabled:pointer-events-none disabled:text-gray-300"
             :disabled="formatFor(entry.id) === 'pdf'"
             :title="formatFor(entry.id) === 'pdf' ? `PDF can't go to the clipboard — use Save` : undefined"
             @click="copy(entry)">Copy</button>
-          <button class="ml-auto text-red-500 hover:underline" @click="remove(entry)">Delete</button>
+        </div>
+        <div class="mt-2 flex items-center justify-between text-xs">
+          <button class="text-blue-600 hover:underline" @click="openInEditor(entry)">Edit</button>
+          <button class="text-red-500 hover:underline" @click="remove(entry)">Delete</button>
         </div>
       </div>
     </div>
