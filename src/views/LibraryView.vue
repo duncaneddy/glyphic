@@ -9,8 +9,20 @@ const library = useLibraryStore();
 const editor = useEditorStore();
 const emit = defineEmits<{ edit: [] }>();
 const error = ref("");
+const feedback = ref<{ id: string; text: string } | null>(null);
+let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
 const formats = reactive<Record<string, ExportFormat>>({});
+const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100";
+const deleteBtnClass = "rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50";
+
+function showFeedback(id: string, text: string) {
+  feedback.value = { id, text };
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => {
+    feedback.value = null;
+  }, 2000);
+}
 
 onMounted(() => library.refresh());
 
@@ -35,7 +47,8 @@ async function save(entry: HistoryEntry) {
   }
   try {
     const name = entry.name.replace(/[^a-zA-Z0-9.-]+/g, "-").slice(0, 40);
-    await exportAs(entry.previewSvg, formatFor(entry.id), 1024, name);
+    const path = await exportAs(entry.previewSvg, formatFor(entry.id), 1024, name);
+    if (path !== null) showFeedback(entry.id, "Saved ✓");
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
@@ -57,6 +70,7 @@ async function copy(entry: HistoryEntry) {
       // so jpeg/webp selections are copied as PNG bitmaps too — don't claim otherwise.
       await copyPngToClipboard(entry.previewSvg, 1024);
     }
+    showFeedback(entry.id, "Copied ✓");
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
@@ -78,27 +92,28 @@ async function remove(entry: HistoryEntry) {
     <p v-if="!library.history.length" class="text-sm text-gray-400">
       Codes you export or copy are saved here automatically.
     </p>
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
       <div v-for="entry in library.history" :key="entry.id"
-        class="rounded-lg border border-gray-200 bg-white p-3">
+        class="relative rounded-lg border border-gray-200 bg-white p-4">
         <div class="mb-2 aspect-square [&>svg]:h-full [&>svg]:w-full" v-html="entry.previewSvg" />
         <p class="truncate text-sm font-medium" :title="entry.name">{{ entry.name }}</p>
         <p class="text-xs text-gray-400">{{ new Date(entry.createdAt).toLocaleString() }}</p>
+        <span v-if="feedback?.id === entry.id" class="absolute right-4 top-4 text-xs text-green-600">{{ feedback.text }}</span>
         <div class="mt-2 flex items-center gap-2 text-xs">
-          <select class="flex-1 min-w-0 rounded border border-gray-300 px-1 py-0.5 text-xs"
+          <select class="flex-1 min-w-0 rounded border border-gray-300 px-2.5 py-1 text-xs"
             :value="formatFor(entry.id)"
             @change="setFormat(entry.id, ($event.target as HTMLSelectElement).value as ExportFormat)">
             <option v-for="fmt in FORMATS" :key="fmt" :value="fmt">{{ fmt.toUpperCase() }}</option>
           </select>
-          <button class="shrink-0 text-blue-600 hover:underline" @click="save(entry)">Save</button>
-          <button class="shrink-0 text-blue-600 hover:underline disabled:pointer-events-none disabled:text-gray-300"
+          <button :class="btnClass" class="shrink-0" @click="save(entry)">Save</button>
+          <button :class="btnClass" class="shrink-0 disabled:pointer-events-none disabled:text-gray-300"
             :disabled="formatFor(entry.id) === 'pdf'"
             :title="formatFor(entry.id) === 'pdf' ? `PDF can't go to the clipboard — use Save` : undefined"
             @click="copy(entry)">Copy</button>
         </div>
         <div class="mt-2 flex items-center justify-between text-xs">
-          <button class="text-blue-600 hover:underline" @click="openInEditor(entry)">Edit</button>
-          <button class="text-red-500 hover:underline" @click="remove(entry)">Delete</button>
+          <button :class="btnClass" @click="openInEditor(entry)">Edit</button>
+          <button :class="deleteBtnClass" @click="remove(entry)">Delete</button>
         </div>
       </div>
     </div>

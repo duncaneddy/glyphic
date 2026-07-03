@@ -14,6 +14,18 @@ const emit = defineEmits<{ edit: [] }>();
 const renaming = ref<string | null>(null);
 const renameText = ref("");
 const error = ref("");
+const feedback = ref<{ id: string; text: string } | null>(null);
+let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
+const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100";
+const deleteBtnClass = "rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50";
+
+function showFeedback(id: string, text: string) {
+  feedback.value = { id, text };
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => {
+    feedback.value = null;
+  }, 2000);
+}
 
 onMounted(() => library.refresh());
 
@@ -69,6 +81,7 @@ async function exportTemplate(t: Template) {
     if (!path) return;
     const contents = JSON.stringify(t, null, 2);
     await invoke("write_file", { path, contents: Array.from(new TextEncoder().encode(contents)) });
+    showFeedback(t.id, "Exported ✓");
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
@@ -116,22 +129,22 @@ async function importTemplate() {
     <p v-if="!library.templates.length" class="text-sm text-gray-400">
       Save a style from the editor to reuse it here.
     </p>
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4">
-      <div v-for="t in library.templates" :key="t.id" class="rounded-lg border border-gray-200 bg-white p-3">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+      <div v-for="t in library.templates" :key="t.id" class="relative rounded-lg border border-gray-200 bg-white p-4">
         <div class="mb-2 aspect-square [&>svg]:h-full [&>svg]:w-full" v-html="swatch(t.style)" />
         <input v-if="renaming === t.id" v-model="renameText" class="w-full rounded border px-1 text-sm"
           @keydown.enter="commitRename(t)" @blur="commitRename(t)" />
         <p v-else class="truncate text-sm font-medium" :title="t.name"
           @dblclick="renaming = t.id; renameText = t.name">{{ t.name }}</p>
-        <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
-          <button class="text-blue-600 hover:underline" @click="editInEditor(t)">Edit</button>
-          <button class="text-blue-600 hover:underline"
-            @click="renaming = t.id; renameText = t.name">Rename</button>
-          <button class="text-blue-600 hover:underline" @click="duplicate(t)">Duplicate</button>
-          <button class="text-blue-600 hover:underline" @click="exportTemplate(t)">Export</button>
+        <span v-if="feedback?.id === t.id" class="absolute right-4 top-4 text-xs text-green-600">{{ feedback.text }}</span>
+        <div class="mt-2 flex flex-wrap gap-2 text-xs">
+          <button :class="btnClass" @click="editInEditor(t)">Edit</button>
+          <button :class="btnClass" @click="renaming = t.id; renameText = t.name">Rename</button>
+          <button :class="btnClass" @click="duplicate(t)">Duplicate</button>
+          <button :class="btnClass" @click="exportTemplate(t)">Export</button>
         </div>
         <div class="mt-2 flex justify-end text-xs">
-          <button class="text-red-500 hover:underline" @click="remove(t)">Delete</button>
+          <button :class="deleteBtnClass" @click="remove(t)">Delete</button>
         </div>
       </div>
     </div>
