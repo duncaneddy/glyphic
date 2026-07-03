@@ -50,10 +50,18 @@ async function doCopy() {
   if (!svg || format.value === "pdf") return;
   status.value = "";
   try {
-    if (format.value === "svg") await copySvgToClipboard(svg);
-    else if (format.value === "eps") await copyEpsToClipboard(svg);
-    else await copyPngToClipboard(svg, editor.exportSize);
-    status.value = `Copied ${format.value.toUpperCase()} to clipboard`;
+    if (format.value === "svg") {
+      await copySvgToClipboard(svg);
+      status.value = "Copied SVG to clipboard";
+    } else if (format.value === "eps") {
+      await copyEpsToClipboard(svg);
+      status.value = "Copied EPS to clipboard";
+    } else {
+      // The OS clipboard only holds bitmaps, and Image.fromBytes only decodes PNG,
+      // so jpeg/webp selections are copied as PNG bitmaps too — don't claim otherwise.
+      await copyPngToClipboard(svg, editor.exportSize);
+      status.value = "Copied image to clipboard";
+    }
     await recordSuccess(svg);
   } catch (e) {
     status.value = e instanceof Error ? e.message : String(e);

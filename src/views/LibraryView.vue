@@ -52,7 +52,11 @@ async function copy(entry: HistoryEntry) {
   try {
     if (format === "svg") await copySvgToClipboard(entry.previewSvg);
     else if (format === "eps") await copyEpsToClipboard(entry.previewSvg);
-    else await copyPngToClipboard(entry.previewSvg, 1024);
+    else {
+      // The OS clipboard only holds bitmaps, and Image.fromBytes only decodes PNG,
+      // so jpeg/webp selections are copied as PNG bitmaps too — don't claim otherwise.
+      await copyPngToClipboard(entry.previewSvg, 1024);
+    }
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }

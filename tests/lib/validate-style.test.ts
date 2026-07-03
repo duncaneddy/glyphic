@@ -92,6 +92,41 @@ describe("isValidStyle", () => {
     expect(isValidStyle(style)).toBe(true);
   });
 
+  it("accepts valid style with a well-formed logo and mask", () => {
+    const style = defaultStyle();
+    style.logo = {
+      src: "data:image/png;base64,iVBORw0KGgo=",
+      sizeRatio: 0.2,
+      knockout: true,
+      knockoutMode: "shape",
+      mask: { size: 8, data: "iVBORw0KGgo=" },
+    };
+    expect(isValidStyle(style)).toBe(true);
+  });
+
+  it("accepts style with logo set to null", () => {
+    const style = defaultStyle();
+    style.logo = null;
+    expect(isValidStyle(style)).toBe(true);
+  });
+
+  it("rejects logo missing required fields", () => {
+    const style = defaultStyle();
+    style.logo = {} as any;
+    expect(isValidStyle(style)).toBe(false);
+  });
+
+  it("rejects logo with a mask whose data is not valid base64", () => {
+    const style = defaultStyle();
+    style.logo = {
+      src: "data:image/png;base64,iVBORw0KGgo=",
+      sizeRatio: 0.2,
+      knockout: true,
+      mask: { size: 8, data: "!!!not-base64!!!" },
+    };
+    expect(isValidStyle(style)).toBe(false);
+  });
+
   it("accepts template with incomplete linear gradient (should now fail)", () => {
     const templateStyle = {
       fill: { type: "linear" },

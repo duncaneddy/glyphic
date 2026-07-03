@@ -35,9 +35,29 @@ export function isValidStyle(s: unknown): s is QrStyle {
   if (!EC_LEVELS.includes(style.ecLevel as string)) return false;
 
   const logo = style.logo;
-  if (logo && typeof logo === "object") {
-    const knockoutMode = (logo as Record<string, unknown>).knockoutMode;
+  if (logo !== null) {
+    if (!logo || typeof logo !== "object") return false;
+    const logoObj = logo as Record<string, unknown>;
+
+    if (typeof logoObj.src !== "string") return false;
+    if (typeof logoObj.sizeRatio !== "number" || !isFinite(logoObj.sizeRatio)) return false;
+    if (typeof logoObj.knockout !== "boolean") return false;
+
+    const knockoutMode = logoObj.knockoutMode;
     if (knockoutMode !== undefined && knockoutMode !== "shape" && knockoutMode !== "box") return false;
+
+    const mask = logoObj.mask;
+    if (mask !== undefined) {
+      if (!mask || typeof mask !== "object") return false;
+      const maskObj = mask as Record<string, unknown>;
+      if (typeof maskObj.size !== "number" || !isFinite(maskObj.size)) return false;
+      if (typeof maskObj.data !== "string") return false;
+      try {
+        atob(maskObj.data);
+      } catch {
+        return false;
+      }
+    }
   }
 
   return true;
