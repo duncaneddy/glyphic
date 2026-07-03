@@ -10,12 +10,12 @@ import TemplateSection from "../components/TemplateSection.vue";
 <template>
   <div class="flex gap-6 p-6 h-full overflow-hidden">
     <div class="flex-1 space-y-3 overflow-y-auto pr-2" data-testid="editor-sections">
-      <!-- ContentSection / ColorSection / LogoSection / ShapeSection / TemplateSection mount here -->
+      <!-- ContentSection / TemplateSection / ColorSection / LogoSection / ShapeSection mount here -->
       <ContentSection />
+      <TemplateSection />
       <ColorSection />
       <LogoSection />
       <ShapeSection />
-      <TemplateSection />
     </div>
     <aside class="w-80 shrink-0">
       <PreviewPanel />

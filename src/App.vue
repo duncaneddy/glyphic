@@ -34,17 +34,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex h-screen bg-gray-50 text-gray-900">
-    <nav class="flex w-40 shrink-0 flex-col gap-1 border-r border-gray-200 bg-white p-3">
-      <p class="mb-2 px-2 text-lg font-bold tracking-tight">Glyphic</p>
+  <div class="flex h-screen flex-col bg-gray-50 text-gray-900">
+    <header data-tauri-drag-region class="flex h-12 shrink-0 items-center gap-1 border-b border-gray-200 bg-gray-50 pl-20 pr-3">
+      <p class="mr-2 text-sm font-bold tracking-tight">Glyphic</p>
       <button v-for="n in NAV" :key="n.id"
-        class="rounded px-3 py-2 text-left text-sm"
+        class="rounded px-3 py-1.5 text-sm"
         :class="view === n.id ? 'bg-gray-900 text-white' : 'hover:bg-gray-100'"
         @click="view = n.id">
         {{ n.label }}
       </button>
-    </nav>
-    <main class="flex-1 overflow-hidden">
+      <div data-tauri-drag-region class="flex-1"></div>
+    </header>
+    <main class="h-[calc(100vh-3rem)] overflow-hidden">
       <CreateView v-if="view === 'create'" />
       <LibraryView v-else-if="view === 'library'" @edit="view = 'create'" />
       <TemplatesView v-else @edit="view = 'create'" />
