@@ -19,14 +19,15 @@ export function renderSvg(config: QrConfig): RenderResult {
   const layout = style.logo ? logoLayout(style.logo, total) : null;
   if (layout?.warning) warnings.push(layout.warning);
 
-  // A module is knocked out when its center (+0.5 margin) falls inside the logo box.
+  // A module is knocked out only when its center falls strictly inside the logo box,
+  // so modules run right up to the image edge (the logo is drawn last and covers any overlap).
   const knocked = (r: number, c: number): boolean => {
     if (!layout || !style.logo?.knockout) return false;
     const cx = c + style.quietZone + 0.5;
     const cy = r + style.quietZone + 0.5;
     return (
-      cx > layout.x - 0.5 && cx < layout.x + layout.size + 0.5 &&
-      cy > layout.y - 0.5 && cy < layout.y + layout.size + 0.5
+      cx > layout.x && cx < layout.x + layout.size &&
+      cy > layout.y && cy < layout.y + layout.size
     );
   };
 

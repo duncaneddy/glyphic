@@ -31,6 +31,22 @@ describe("logo", () => {
     expect(warnings.length).toBe(1);
   });
 
+  it("knocks out only modules whose center is strictly inside the logo box, leaving no whitespace margin", () => {
+    // At sizeRatio 0.16 on this payload/EC-H config the logo box is [13.86, 19.14] x [13.86, 19.14]
+    // (module centers land on half-integers). A ±0.5 margin around that box would additionally
+    // knock out 24 module-slots that sit just outside the box; tight knockout must render those.
+    const { svg } = renderSvg(cfg({
+      logo: { src: DOT, sizeRatio: 0.16, knockout: true },
+      ecLevel: "H",
+    }));
+    const bodyD = svg.match(/<path fill="[^"]*" d="([^"]*)"\/>/)?.[1] ?? "";
+    const moduleCount = (bodyD.match(/M/g) || []).length;
+    // With the old ±0.5-expanded knockout this payload rendered 302 modules; tight knockout
+    // must render strictly more (modules right up to the logo edge are no longer cleared).
+    expect(moduleCount).toBeGreaterThan(302);
+    expect(moduleCount).toBe(314);
+  });
+
   it("knockout removes modules under the logo but code still decodes at EC H", () => {
     const withLogo = renderSvg(cfg({
       logo: { src: DOT, sizeRatio: 0.2, knockout: true },
