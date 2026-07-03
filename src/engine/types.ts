@@ -35,6 +35,9 @@ export interface LogoStyle {
   src: string;          // always a data URI (uploads are resolved to data URIs by the UI)
   sizeRatio: number;    // 0.1–0.3 of full code width
   knockout: boolean;    // clear modules behind the logo
+  // "shape" (default when absent) clears modules under opaque logo pixels using `mask`, falling
+  // back to the whole box when no mask exists; "box" always clears the whole logo box.
+  knockoutMode?: "shape" | "box";
   // Alpha lookup for shape-aware knockout: `size*size` alpha values (row-major), sampled from
   // the logo rendered into a square cell grid with contain/centered fit (xMidYMid meet), base64-encoded.
   mask?: { size: number; data: string };

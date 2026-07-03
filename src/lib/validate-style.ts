@@ -19,5 +19,11 @@ export function isValidStyle(s: unknown): s is QrStyle {
   if (style.background !== null && typeof style.background !== "string") return false;
   if (!EC_LEVELS.includes(style.ecLevel as string)) return false;
 
+  const logo = style.logo;
+  if (logo && typeof logo === "object") {
+    const knockoutMode = (logo as Record<string, unknown>).knockoutMode;
+    if (knockoutMode !== undefined && knockoutMode !== "shape" && knockoutMode !== "box") return false;
+  }
+
   return true;
 }

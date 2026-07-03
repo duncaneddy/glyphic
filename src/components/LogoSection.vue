@@ -6,7 +6,10 @@ import { buildLogoMask } from "../lib/logo-mask";
 const editor = useEditorStore();
 
 async function setLogo(src: string) {
-  editor.config.style.logo = { sizeRatio: 0.2, knockout: true, ...editor.config.style.logo, src, mask: undefined };
+  editor.config.style.logo = {
+    sizeRatio: 0.2, knockout: true, knockoutMode: "shape",
+    ...editor.config.style.logo, src, mask: undefined,
+  };
   if (editor.config.style.ecLevel !== "H") editor.config.style.ecLevel = "H";
   try {
     const mask = await buildLogoMask(src);
@@ -56,6 +59,12 @@ async function onUpload(e: Event) {
       <label class="flex items-center gap-2 text-sm">
         <input v-model="editor.config.style.logo.knockout" type="checkbox" />
         Clear modules behind logo
+      </label>
+      <label v-if="editor.config.style.logo.knockout" class="flex items-center gap-2 pl-6 text-sm">
+        <select v-model="editor.config.style.logo.knockoutMode" class="rounded border border-gray-300 px-2 py-1 text-xs">
+          <option value="shape">Around artwork</option>
+          <option value="box">Full box</option>
+        </select>
       </label>
     </template>
 

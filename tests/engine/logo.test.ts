@@ -143,4 +143,48 @@ describe("logo", () => {
       expect(decodeSvg(withMask)).toBe("https://example.com/abc");
     });
   });
+
+  describe("knockoutMode", () => {
+    const moduleCount = (svg: string): number => {
+      const bodyD = svg.match(/<path fill="[^"]*" d="([^"]*)"\/>/)?.[1] ?? "";
+      return (bodyD.match(/M/g) || []).length;
+    };
+
+    it("mode 'box' clears modules over the transparent half of a mask, ignoring the mask shape", () => {
+      const boxMode = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, mask: LEFT_HALF_OPAQUE, knockoutMode: "box" },
+        ecLevel: "H",
+      })).svg;
+      const wholeBox = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, knockoutMode: "box" },
+        ecLevel: "H",
+      })).svg;
+      // Ignoring the mask means "box" mode renders the same module count whether or not a mask is present.
+      expect(moduleCount(boxMode)).toBe(moduleCount(wholeBox));
+    });
+
+    it("mode 'shape' keeps modules over the transparent half of a mask, unlike mode 'box'", () => {
+      const shapeMode = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, mask: LEFT_HALF_OPAQUE, knockoutMode: "shape" },
+        ecLevel: "H",
+      })).svg;
+      const boxMode = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, mask: LEFT_HALF_OPAQUE, knockoutMode: "box" },
+        ecLevel: "H",
+      })).svg;
+      expect(moduleCount(shapeMode)).toBeGreaterThan(moduleCount(boxMode));
+    });
+
+    it("default (absent knockoutMode) behaves like mode 'shape', keeping modules over the transparent half", () => {
+      const defaultMode = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, mask: LEFT_HALF_OPAQUE },
+        ecLevel: "H",
+      })).svg;
+      const shapeMode = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, mask: LEFT_HALF_OPAQUE, knockoutMode: "shape" },
+        ecLevel: "H",
+      })).svg;
+      expect(moduleCount(defaultMode)).toBe(moduleCount(shapeMode));
+    });
+  });
 });
