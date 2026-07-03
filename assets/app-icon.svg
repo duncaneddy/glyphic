@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="forge" cx="0.5" cy="0.42" r="0.75">
+      <stop offset="0" stop-color="#2e2624"/>
+      <stop offset="0.55" stop-color="#201a18"/>
+      <stop offset="1" stop-color="#120e0d"/>
+    </radialGradient>
+    <linearGradient id="molten" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/>
+      <stop offset="0.35" stop-color="#ffb347"/>
+      <stop offset="0.7" stop-color="#ff7a1a"/>
+      <stop offset="1" stop-color="#c93a10"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffbe8"/>
+      <stop offset="0.5" stop-color="#ffd98a"/>
+      <stop offset="1" stop-color="#ff9c3f"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+    <filter id="emberGlow" x="-200%" y="-200%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <!-- macOS-style rounded square backdrop -->
+  <rect x="32" y="32" width="960" height="960" rx="218" fill="url(#forge)"/>
+  <rect x="32" y="32" width="960" height="960" rx="218" fill="none" stroke="#3a2f2a" stroke-width="6"/>
+
+  <!-- rune-g: angular bowl + stem with hooked descender, straight strokes only -->
+  <g transform="translate(45,-25)">
+  <!-- glow layer -->
+  <g fill="none" stroke="#ff6a00" stroke-width="120" opacity="0.55" filter="url(#glow)"
+     stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M612 340 L428 340 L326 480 L428 620 L612 620"/>
+    <path d="M612 268 L612 640 L448 858 L336 800"/>
+  </g>
+
+  <!-- molten body -->
+  <g fill="none" stroke="url(#molten)" stroke-width="78"
+     stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M612 340 L428 340 L326 480 L428 620 L612 620"/>
+    <path d="M612 268 L612 640 L448 858 L336 800"/>
+  </g>
+
+  <!-- white-hot core -->
+  <g fill="none" stroke="url(#core)" stroke-width="26" opacity="0.9"
+     stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M612 340 L428 340 L326 480 L428 620 L612 620"/>
+    <path d="M612 268 L612 640 L448 858 L336 800"/>
+  </g>
+
+  <!-- embers -->
+  <g filter="url(#emberGlow)">
+    <circle cx="700" cy="330" r="9" fill="#ffb347"/>
+    <circle cx="272" cy="588" r="7" fill="#ff8c2e"/>
+    <circle cx="530" cy="760" r="6" fill="#ffd98a"/>
+    <circle cx="742" cy="640" r="5" fill="#ff7a1a"/>
+  </g>
+  </g>
+</svg>
