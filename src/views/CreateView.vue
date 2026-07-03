@@ -13,8 +13,10 @@ import TemplateSection from "../components/TemplateSection.vue";
       <!-- ContentSection / TemplateSection / ColorSection / LogoSection / ShapeSection mount here -->
       <ContentSection />
       <TemplateSection />
-      <ColorSection />
-      <LogoSection />
+      <div class="grid grid-cols-2 gap-3">
+        <ColorSection />
+        <LogoSection />
+      </div>
       <ShapeSection />
     </div>
     <aside class="w-80 shrink-0">

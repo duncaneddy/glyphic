@@ -14,11 +14,13 @@ const eyeBallPreviews = Object.fromEntries(EYE_BALL_SHAPES.map((s) => [s, eyeBal
 
 <template>
   <SectionCard title="Shape">
-    <ShapePicker label="Body shape" :options="BODY_SHAPES" :previews="bodyPreviews"
-      v-model="editor.config.style.bodyShape" />
-    <ShapePicker label="Eye frame" :options="EYE_FRAME_SHAPES" :previews="eyeFramePreviews"
-      v-model="editor.config.style.eyeFrameShape" />
-    <ShapePicker label="Eyeball" :options="EYE_BALL_SHAPES" :previews="eyeBallPreviews"
-      v-model="editor.config.style.eyeBallShape" />
+    <div class="grid grid-cols-3 gap-4">
+      <ShapePicker label="Body shape" :options="BODY_SHAPES" :previews="bodyPreviews"
+        v-model="editor.config.style.bodyShape" />
+      <ShapePicker label="Eye frame" :options="EYE_FRAME_SHAPES" :previews="eyeFramePreviews"
+        v-model="editor.config.style.eyeFrameShape" />
+      <ShapePicker label="Eyeball" :options="EYE_BALL_SHAPES" :previews="eyeBallPreviews"
+        v-model="editor.config.style.eyeBallShape" />
+    </div>
   </SectionCard>
 </template>
