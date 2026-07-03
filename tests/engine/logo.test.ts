@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { logoLayout } from "../../src/engine/logo";
+import { logoLayout, maskAlphaAt } from "../../src/engine/logo";
 import { renderSvg } from "../../src/engine/render";
 import { decodeSvg } from "../helpers/decode";
 import { cfg } from "./render.test";
@@ -7,6 +7,18 @@ import { cfg } from "./render.test";
 // 1x1 red PNG
 const DOT =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+/** Build a synthetic mask (size x size), base64-encoding the alpha bytes like the real pipeline does. */
+function buildMask(size: number, alphaAt: (x: number, y: number) => number): { size: number; data: string } {
+  const bytes = new Uint8Array(size * size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) bytes[y * size + x] = alphaAt(x, y);
+  }
+  return { size, data: Buffer.from(bytes).toString("base64") };
+}
+
+// 8x8 mask: left half fully opaque, right half fully transparent.
+const LEFT_HALF_OPAQUE = buildMask(8, (x) => (x < 4 ? 255 : 0));
 
 describe("logo", () => {
   it("layout centers the logo", () => {
@@ -60,5 +72,75 @@ describe("logo", () => {
     const { svg } = renderSvg(cfg({ logo: { src: hostile, sizeRatio: 0.2, knockout: true }, ecLevel: "H" }));
     expect(svg).not.toContain("<script>");
     expect(svg).not.toContain('x"/>');
+  });
+
+  describe("maskAlphaAt", () => {
+    it("reads the opaque left half and the transparent right half of a synthetic mask", () => {
+      expect(maskAlphaAt(LEFT_HALF_OPAQUE, 0.1, 0.5)).toBe(255);
+      expect(maskAlphaAt(LEFT_HALF_OPAQUE, 0.9, 0.5)).toBe(0);
+    });
+
+    it("clamps out-of-range u,v into the mask bounds", () => {
+      expect(maskAlphaAt(LEFT_HALF_OPAQUE, -1, -1)).toBe(255);
+      expect(maskAlphaAt(LEFT_HALF_OPAQUE, 2, 2)).toBe(0);
+    });
+  });
+
+  describe("shape-aware (mask) knockout", () => {
+    const moduleCount = (svg: string): number => {
+      const bodyD = svg.match(/<path fill="[^"]*" d="([^"]*)"\/>/)?.[1] ?? "";
+      return (bodyD.match(/M/g) || []).length;
+    };
+
+    it("a mask that's opaque everywhere behaves like the whole-box knockout", () => {
+      const allOpaque = buildMask(8, () => 255);
+      const withMask = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, mask: allOpaque },
+        ecLevel: "H",
+      })).svg;
+      const boxOnly = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true },
+        ecLevel: "H",
+      })).svg;
+      expect(moduleCount(withMask)).toBe(moduleCount(boxOnly));
+    });
+
+    it("a mask that's transparent everywhere knocks out nothing, same as no knockout at all", () => {
+      const allTransparent = buildMask(8, () => 0);
+      const withMask = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, mask: allTransparent },
+        ecLevel: "H",
+      })).svg;
+      const noKnockout = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: false },
+        ecLevel: "H",
+      })).svg;
+      expect(moduleCount(withMask)).toBe(moduleCount(noKnockout));
+    });
+
+    it("a half-opaque mask knocks out strictly fewer modules than the whole box, but more than none", () => {
+      const halfMask = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true, mask: LEFT_HALF_OPAQUE },
+        ecLevel: "H",
+      })).svg;
+      const boxOnly = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: true },
+        ecLevel: "H",
+      })).svg;
+      const noKnockout = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.16, knockout: false },
+        ecLevel: "H",
+      })).svg;
+      expect(moduleCount(halfMask)).toBeGreaterThan(moduleCount(boxOnly));
+      expect(moduleCount(halfMask)).toBeLessThan(moduleCount(noKnockout));
+    });
+
+    it("decodes at EC H with a mask applied", () => {
+      const withMask = renderSvg(cfg({
+        logo: { src: DOT, sizeRatio: 0.2, knockout: true, mask: LEFT_HALF_OPAQUE },
+        ecLevel: "H",
+      })).svg;
+      expect(decodeSvg(withMask)).toBe("https://example.com/abc");
+    });
   });
 });

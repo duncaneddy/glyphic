@@ -3,7 +3,7 @@ import { computeMatrix } from "./matrix";
 import { escapeAttr, fillId, resolveFill } from "./fills";
 import { bodyModulePath } from "./body-shapes";
 import { eyeBallPath, eyeFramePath } from "./eye-shapes";
-import { logoElement, logoLayout } from "./logo";
+import { logoElement, logoLayout, maskAlphaAt } from "./logo";
 import type { QrConfig } from "./types";
 
 export interface RenderResult { svg: string; warnings: string[] }
@@ -21,14 +21,22 @@ export function renderSvg(config: QrConfig): RenderResult {
 
   // A module is knocked out only when its center falls strictly inside the logo box,
   // so modules run right up to the image edge (the logo is drawn last and covers any overlap).
+  // With a mask, only centers under an opaque logo pixel are cleared, so pips follow the
+  // artwork's shape instead of its whole bounding box; without one, the whole box is cleared
+  // (backward compat with saved configs that predate masks).
   const knocked = (r: number, c: number): boolean => {
     if (!layout || !style.logo?.knockout) return false;
     const cx = c + style.quietZone + 0.5;
     const cy = r + style.quietZone + 0.5;
-    return (
+    const inBox =
       cx > layout.x && cx < layout.x + layout.size &&
-      cy > layout.y && cy < layout.y + layout.size
-    );
+      cy > layout.y && cy < layout.y + layout.size;
+    if (!inBox) return false;
+    const mask = style.logo.mask;
+    if (!mask) return true;
+    const u = (cx - layout.x) / layout.size;
+    const v = (cy - layout.y) / layout.size;
+    return maskAlphaAt(mask, u, v) > 16;
   };
 
   const solidAt = (r: number, c: number): boolean =>

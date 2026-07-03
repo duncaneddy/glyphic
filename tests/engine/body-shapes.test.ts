@@ -19,6 +19,12 @@ describe("bodyModulePath", () => {
     expect(bodyModulePath("vertical-bars", 0, 0, ALL)).not.toContain("A");
   });
 
+  it("classy-sharp free module has straight diagonal corners (L), no arcs", () => {
+    const d = bodyModulePath("classy-sharp", 0, 0, FREE);
+    expect(d).not.toContain("A");
+    expect(d).toContain("L");
+  });
+
   it.each(BODY_SHAPES)("every shape emits a closed path (%s)", (shape) => {
     const d = bodyModulePath(shape, 3, 5, FREE);
     expect(d.startsWith("M")).toBe(true);

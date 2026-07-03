@@ -1,4 +1,4 @@
-import { circlePath, roundedRectPath, NO_CORNERS, type Corners } from "./geometry";
+import { chamferedRectPath, circlePath, roundedRectPath, NO_CORNERS, type Corners } from "./geometry";
 import type { BodyShape } from "./types";
 
 export interface Neighbors { up: boolean; down: boolean; left: boolean; right: boolean }
@@ -35,6 +35,11 @@ export function bodyModulePath(shape: BodyShape, x: number, y: number, n: Neighb
         tr: n.up || n.right ? 0 : 0.25,
         br: n.down || n.right ? 0 : 0.5,
         bl: n.down || n.left ? 0 : 0.25,
+      });
+    case "classy-sharp":
+      return chamferedRectPath(x, y, 1, 1, {
+        tl: n.up || n.left ? 0 : 0.35, tr: 0,
+        br: n.down || n.right ? 0 : 0.35, bl: 0,
       });
     case "vertical-bars":
       return roundedRectPath(x + 0.125, y, 0.75, 1, {

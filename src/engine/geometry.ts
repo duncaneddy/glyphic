@@ -18,6 +18,21 @@ export function roundedRectPath(x: number, y: number, w: number, h: number, r: C
   return p.join("");
 }
 
+/** Clockwise chamfered rect path with independent corner cuts (straight diagonal lines, no arcs). */
+export function chamferedRectPath(x: number, y: number, w: number, h: number, r: Corners): string {
+  const p: string[] = [`M${num(x + r.tl)},${num(y)}`];
+  p.push(`H${num(x + w - r.tr)}`);
+  if (r.tr) p.push(`L${num(x + w)},${num(y + r.tr)}`);
+  p.push(`V${num(y + h - r.br)}`);
+  if (r.br) p.push(`L${num(x + w - r.br)},${num(y + h)}`);
+  p.push(`H${num(x + r.bl)}`);
+  if (r.bl) p.push(`L${num(x)},${num(y + h - r.bl)}`);
+  p.push(`V${num(y + r.tl)}`);
+  if (r.tl) p.push(`L${num(x + r.tl)},${num(y)}`);
+  p.push("Z");
+  return p.join("");
+}
+
 export function circlePath(cx: number, cy: number, r: number): string {
   return (
     `M${num(cx - r)},${num(cy)}` +

@@ -21,7 +21,7 @@ export type Fill =
 
 export const BODY_SHAPES = [
   "square", "dots", "rounded", "extra-rounded",
-  "classy", "classy-rounded", "vertical-bars", "horizontal-bars",
+  "classy", "classy-rounded", "classy-sharp", "vertical-bars", "horizontal-bars",
 ] as const;
 export type BodyShape = (typeof BODY_SHAPES)[number];
 
@@ -35,6 +35,9 @@ export interface LogoStyle {
   src: string;          // always a data URI (uploads are resolved to data URIs by the UI)
   sizeRatio: number;    // 0.1–0.3 of full code width
   knockout: boolean;    // clear modules behind the logo
+  // Alpha lookup for shape-aware knockout: `size*size` alpha values (row-major), sampled from
+  // the logo rendered into a square cell grid with contain/centered fit (xMidYMid meet), base64-encoded.
+  mask?: { size: number; data: string };
 }
 
 export interface QrStyle {
