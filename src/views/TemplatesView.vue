@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { invoke } from "@tauri-apps/api/core";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
 import { renderSvg } from "../engine/render";
+import { isValidStyle } from "../lib/validate-style";
 import type { QrStyle, Template } from "../engine/types";
 
 const library = useLibraryStore();
@@ -55,11 +58,60 @@ async function remove(t: Template) {
     error.value = e instanceof Error ? e.message : String(e);
   }
 }
+
+async function exportTemplate(t: Template) {
+  error.value = "";
+  try {
+    const path = await save({
+      defaultPath: `${t.name}.json`,
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+    if (!path) return;
+    const contents = JSON.stringify(t, null, 2);
+    await invoke("write_file", { path, contents: Array.from(new TextEncoder().encode(contents)) });
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : String(e);
+  }
+}
+
+async function importTemplate() {
+  error.value = "";
+  try {
+    const path = await open({ filters: [{ name: "JSON", extensions: ["json"] }] });
+    if (!path || Array.isArray(path)) return;
+    const text = await invoke<string>("read_text_file", { path });
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      error.value = "Not a valid Glyphic template file.";
+      return;
+    }
+
+    const style = (parsed as { style?: unknown } | null)?.style;
+    if (!isValidStyle(style)) {
+      error.value = "Not a valid Glyphic template file.";
+      return;
+    }
+
+    const rawName = (parsed as { name?: unknown }).name;
+    let name = typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Imported template";
+    if (library.templates.some((existing) => existing.name === name)) name = `${name} (imported)`;
+    await library.saveNewTemplate(name, style);
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : String(e);
+  }
+}
 </script>
 
 <template>
   <div class="h-full overflow-y-auto p-6">
-    <h1 class="mb-4 text-lg font-semibold">Templates</h1>
+    <div class="mb-4 flex items-center justify-between">
+      <h1 class="text-lg font-semibold">Templates</h1>
+      <button class="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100"
+        @click="importTemplate">Import…</button>
+    </div>
     <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
     <p v-if="!library.templates.length" class="text-sm text-gray-400">
       Save a style from the editor to reuse it here.
@@ -71,12 +123,13 @@ async function remove(t: Template) {
           @keydown.enter="commitRename(t)" @blur="commitRename(t)" />
         <p v-else class="truncate text-sm font-medium" :title="t.name"
           @dblclick="renaming = t.id; renameText = t.name">{{ t.name }}</p>
-        <div class="mt-2 flex gap-2 text-xs">
+        <div class="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-xs">
           <button class="text-blue-600 hover:underline" @click="editInEditor(t)">Edit</button>
           <button class="text-blue-600 hover:underline"
             @click="renaming = t.id; renameText = t.name">Rename</button>
           <button class="text-blue-600 hover:underline" @click="duplicate(t)">Duplicate</button>
-          <button class="ml-auto text-red-500 hover:underline" @click="remove(t)">Delete</button>
+          <button class="text-blue-600 hover:underline" @click="exportTemplate(t)">Export</button>
+          <button class="text-red-500 hover:underline" @click="remove(t)">Delete</button>
         </div>
       </div>
     </div>

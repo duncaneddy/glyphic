@@ -5,7 +5,7 @@ import LibraryView from "./views/LibraryView.vue";
 import TemplatesView from "./views/TemplatesView.vue";
 import { getSettings } from "./lib/ipc";
 import { useEditorStore } from "./stores/editor";
-import { BODY_SHAPES, EYE_BALL_SHAPES, EYE_FRAME_SHAPES } from "./engine/types";
+import { isValidStyle } from "./lib/validate-style";
 
 const view = ref<"create" | "library" | "templates">("create");
 const NAV = [
@@ -19,12 +19,7 @@ onMounted(async () => {
   try {
     const s = await getSettings();
     const style = s.lastStyle;
-    if (
-      style &&
-      BODY_SHAPES.includes(style.bodyShape) &&
-      EYE_FRAME_SHAPES.includes(style.eyeFrameShape) &&
-      EYE_BALL_SHAPES.includes(style.eyeBallShape)
-    ) {
+    if (isValidStyle(style)) {
       editor.applyStyle(style);
     }
   } catch {

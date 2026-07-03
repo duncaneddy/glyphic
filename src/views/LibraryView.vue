@@ -1,16 +1,25 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
 import type { HistoryEntry, QrConfig } from "../engine/types";
-import { copyPngToClipboard, exportAs } from "../lib/exporter";
+import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
 
 const library = useLibraryStore();
 const editor = useEditorStore();
 const emit = defineEmits<{ edit: [] }>();
 const error = ref("");
+const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
+const formats = reactive<Record<string, ExportFormat>>({});
 
 onMounted(() => library.refresh());
+
+function formatFor(id: string): ExportFormat {
+  return formats[id] ?? "svg";
+}
+function setFormat(id: string, format: ExportFormat) {
+  formats[id] = format;
+}
 
 function openInEditor(entry: HistoryEntry) {
   editor.loadConfig(entry.config as QrConfig);
@@ -18,26 +27,32 @@ function openInEditor(entry: HistoryEntry) {
   emit("edit");
 }
 
-async function copy(entry: HistoryEntry) {
+async function save(entry: HistoryEntry) {
+  error.value = "";
+  if (!entry.previewSvg) {
+    error.value = "No preview available for this entry.";
+    return;
+  }
   try {
-    if (!entry.previewSvg) {
-      error.value = "No preview available for this entry.";
-      return;
-    }
-    await copyPngToClipboard(entry.previewSvg, 1024);
+    const name = entry.name.replace(/[^a-zA-Z0-9.-]+/g, "-").slice(0, 40);
+    await exportAs(entry.previewSvg, formatFor(entry.id), 1024, name);
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
 }
 
-async function exportSvg(entry: HistoryEntry) {
+async function copy(entry: HistoryEntry) {
+  error.value = "";
+  if (!entry.previewSvg) {
+    error.value = "No preview available for this entry.";
+    return;
+  }
+  const format = formatFor(entry.id);
+  if (format === "pdf") return;
   try {
-    if (!entry.previewSvg) {
-      error.value = "No preview available for this entry.";
-      return;
-    }
-    const name = entry.name.replace(/[^a-zA-Z0-9.-]+/g, "-").slice(0, 40);
-    await exportAs(entry.previewSvg, "svg", 1024, name);
+    if (format === "svg") await copySvgToClipboard(entry.previewSvg);
+    else if (format === "eps") await copyEpsToClipboard(entry.previewSvg);
+    else await copyPngToClipboard(entry.previewSvg, 1024);
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
@@ -65,12 +80,19 @@ async function remove(entry: HistoryEntry) {
         <div class="mb-2 aspect-square [&>svg]:h-full [&>svg]:w-full" v-html="entry.previewSvg" />
         <p class="truncate text-sm font-medium" :title="entry.name">{{ entry.name }}</p>
         <p class="text-xs text-gray-400">{{ new Date(entry.createdAt).toLocaleString() }}</p>
-        <div class="mt-2 flex gap-2 text-xs">
+        <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
           <button class="text-blue-600 hover:underline" @click="openInEditor(entry)">Edit</button>
-          <button class="text-blue-600 hover:underline" @click="copy(entry)">Copy PNG</button>
-          <button class="text-blue-600 hover:underline" @click="exportSvg(entry)">Export SVG</button>
-          <button class="ml-auto text-red-500 hover:underline"
-            @click="remove(entry)">Delete</button>
+          <select class="rounded border border-gray-300 px-1 py-0.5 text-xs"
+            :value="formatFor(entry.id)"
+            @change="setFormat(entry.id, ($event.target as HTMLSelectElement).value as ExportFormat)">
+            <option v-for="fmt in FORMATS" :key="fmt" :value="fmt">{{ fmt.toUpperCase() }}</option>
+          </select>
+          <button class="text-blue-600 hover:underline" @click="save(entry)">Save</button>
+          <button class="text-blue-600 hover:underline disabled:pointer-events-none disabled:text-gray-300"
+            :disabled="formatFor(entry.id) === 'pdf'"
+            :title="formatFor(entry.id) === 'pdf' ? `PDF can't go to the clipboard — use Save` : undefined"
+            @click="copy(entry)">Copy</button>
+          <button class="ml-auto text-red-500 hover:underline" @click="remove(entry)">Delete</button>
         </div>
       </div>
     </div>
