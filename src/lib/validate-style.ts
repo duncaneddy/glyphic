@@ -16,6 +16,21 @@ export function isValidStyle(s: unknown): s is QrStyle {
     return false;
   }
 
+  const fillObj = fill as Record<string, unknown>;
+  const fillType = fillObj.type as string;
+
+  if (fillType === "solid") {
+    if (typeof fillObj.color !== "string") return false;
+  } else if (fillType === "linear") {
+    if (typeof fillObj.from !== "string") return false;
+    if (typeof fillObj.to !== "string") return false;
+    const angleDeg = fillObj.angleDeg;
+    if (typeof angleDeg !== "number" || !isFinite(angleDeg)) return false;
+  } else if (fillType === "radial") {
+    if (typeof fillObj.from !== "string") return false;
+    if (typeof fillObj.to !== "string") return false;
+  }
+
   if (style.background !== null && typeof style.background !== "string") return false;
   if (!EC_LEVELS.includes(style.ecLevel as string)) return false;
 
