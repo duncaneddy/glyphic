@@ -6,6 +6,7 @@ import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
 import { renderSvg } from "../engine/render";
 import { isValidStyle } from "../lib/validate-style";
+import { showToast } from "../lib/toast";
 import type { QrStyle, Template } from "../engine/types";
 
 const library = useLibraryStore();
@@ -14,18 +15,8 @@ const emit = defineEmits<{ edit: [] }>();
 const renaming = ref<string | null>(null);
 const renameText = ref("");
 const error = ref("");
-const feedback = ref<{ id: string; text: string } | null>(null);
-let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
-const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100";
-const deleteBtnClass = "rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50";
-
-function showFeedback(id: string, text: string) {
-  feedback.value = { id, text };
-  clearTimeout(feedbackTimer);
-  feedbackTimer = setTimeout(() => {
-    feedback.value = null;
-  }, 2000);
-}
+const btnClass = "w-full rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100";
+const deleteBtnClass = "col-span-2 rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50";
 
 onMounted(() => library.refresh());
 
@@ -81,7 +72,7 @@ async function exportTemplate(t: Template) {
     if (!path) return;
     const contents = JSON.stringify(t, null, 2);
     await invoke("write_file", { path, contents: Array.from(new TextEncoder().encode(contents)) });
-    showFeedback(t.id, "Exported ✓");
+    showToast("Template exported");
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
@@ -136,14 +127,11 @@ async function importTemplate() {
           @keydown.enter="commitRename(t)" @blur="commitRename(t)" />
         <p v-else class="truncate text-sm font-medium" :title="t.name"
           @dblclick="renaming = t.id; renameText = t.name">{{ t.name }}</p>
-        <span v-if="feedback?.id === t.id" class="absolute right-4 top-4 text-xs text-green-600">{{ feedback.text }}</span>
-        <div class="mt-2 flex flex-wrap gap-2 text-xs">
+        <div class="mt-2 grid grid-cols-2 gap-1.5 text-xs">
           <button :class="btnClass" @click="editInEditor(t)">Edit</button>
           <button :class="btnClass" @click="renaming = t.id; renameText = t.name">Rename</button>
           <button :class="btnClass" @click="duplicate(t)">Duplicate</button>
           <button :class="btnClass" @click="exportTemplate(t)">Export</button>
-        </div>
-        <div class="mt-2 flex justify-end text-xs">
           <button :class="deleteBtnClass" @click="remove(t)">Delete</button>
         </div>
       </div>

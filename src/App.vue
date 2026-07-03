@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import CreateView from "./views/CreateView.vue";
 import LibraryView from "./views/LibraryView.vue";
 import TemplatesView from "./views/TemplatesView.vue";
+import ToastFlash from "./components/ToastFlash.vue";
 import { getSettings } from "./lib/ipc";
 import { useEditorStore } from "./stores/editor";
 import { isValidStyle } from "./lib/validate-style";
@@ -45,5 +46,6 @@ onMounted(async () => {
       <LibraryView v-else-if="view === 'library'" @edit="view = 'create'" />
       <TemplatesView v-else @edit="view = 'create'" />
     </main>
+    <ToastFlash />
   </div>
 </template>

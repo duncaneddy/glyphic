@@ -4,25 +4,16 @@ import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
 import type { HistoryEntry, QrConfig } from "../engine/types";
 import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
+import { showToast } from "../lib/toast";
 
 const library = useLibraryStore();
 const editor = useEditorStore();
 const emit = defineEmits<{ edit: [] }>();
 const error = ref("");
-const feedback = ref<{ id: string; text: string } | null>(null);
-let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
 const formats = reactive<Record<string, ExportFormat>>({});
 const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100";
 const deleteBtnClass = "rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50";
-
-function showFeedback(id: string, text: string) {
-  feedback.value = { id, text };
-  clearTimeout(feedbackTimer);
-  feedbackTimer = setTimeout(() => {
-    feedback.value = null;
-  }, 2000);
-}
 
 onMounted(() => library.refresh());
 
@@ -48,7 +39,7 @@ async function save(entry: HistoryEntry) {
   try {
     const name = entry.name.replace(/[^a-zA-Z0-9.-]+/g, "-").slice(0, 40);
     const path = await exportAs(entry.previewSvg, formatFor(entry.id), 1024, name);
-    if (path !== null) showFeedback(entry.id, "Saved ✓");
+    if (path !== null) showToast("Saved");
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
@@ -70,7 +61,7 @@ async function copy(entry: HistoryEntry) {
       // so jpeg/webp selections are copied as PNG bitmaps too — don't claim otherwise.
       await copyPngToClipboard(entry.previewSvg, 1024);
     }
-    showFeedback(entry.id, "Copied ✓");
+    showToast("Copied to clipboard");
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   }
@@ -98,7 +89,6 @@ async function remove(entry: HistoryEntry) {
         <div class="mb-2 aspect-square [&>svg]:h-full [&>svg]:w-full" v-html="entry.previewSvg" />
         <p class="truncate text-sm font-medium" :title="entry.name">{{ entry.name }}</p>
         <p class="text-xs text-gray-400">{{ new Date(entry.createdAt).toLocaleString() }}</p>
-        <span v-if="feedback?.id === entry.id" class="absolute right-4 top-4 text-xs text-green-600">{{ feedback.text }}</span>
         <div class="mt-2 flex items-center gap-2 text-xs">
           <select class="flex-1 min-w-0 rounded border border-gray-300 px-2.5 py-1 text-xs"
             :value="formatFor(entry.id)"
@@ -111,9 +101,9 @@ async function remove(entry: HistoryEntry) {
             :title="formatFor(entry.id) === 'pdf' ? `PDF can't go to the clipboard — use Save` : undefined"
             @click="copy(entry)">Copy</button>
         </div>
-        <div class="mt-2 flex items-center justify-between text-xs">
-          <button :class="btnClass" @click="openInEditor(entry)">Edit</button>
-          <button :class="deleteBtnClass" @click="remove(entry)">Delete</button>
+        <div class="mt-2 grid grid-cols-2 gap-1.5 text-xs">
+          <button :class="[btnClass, 'w-full']" @click="openInEditor(entry)">Edit</button>
+          <button :class="[deleteBtnClass, 'w-full']" @click="remove(entry)">Delete</button>
         </div>
       </div>
     </div>

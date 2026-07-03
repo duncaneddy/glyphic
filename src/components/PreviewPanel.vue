@@ -4,6 +4,7 @@ import { useEditorStore } from "../stores/editor";
 import { useLibraryStore } from "../stores/library";
 import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
 import { setSettings } from "../lib/ipc";
+import { showToast } from "../lib/toast";
 
 const editor = useEditorStore();
 const library = useLibraryStore();
@@ -37,7 +38,7 @@ async function doSave() {
   try {
     const path = await exportAs(svg, format.value, editor.exportSize, suggestedName());
     if (path) {
-      status.value = `Saved ${format.value.toUpperCase()}`;
+      showToast(`Saved ${format.value.toUpperCase()}`);
       await recordSuccess(svg);
     }
   } catch (e) {
@@ -52,16 +53,14 @@ async function doCopy() {
   try {
     if (format.value === "svg") {
       await copySvgToClipboard(svg);
-      status.value = "Copied SVG to clipboard";
     } else if (format.value === "eps") {
       await copyEpsToClipboard(svg);
-      status.value = "Copied EPS to clipboard";
     } else {
       // The OS clipboard only holds bitmaps, and Image.fromBytes only decodes PNG,
       // so jpeg/webp selections are copied as PNG bitmaps too — don't claim otherwise.
       await copyPngToClipboard(svg, editor.exportSize);
-      status.value = "Copied image to clipboard";
     }
+    showToast("Copied to clipboard");
     await recordSuccess(svg);
   } catch (e) {
     status.value = e instanceof Error ? e.message : String(e);
