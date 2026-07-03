@@ -15,6 +15,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             write_file,
             export::export_vector,
+            export::render_eps,
             store::list_templates, store::save_template, store::delete_template,
             store::list_history, store::save_history_entry, store::delete_history_entry,
             store::get_settings, store::set_settings

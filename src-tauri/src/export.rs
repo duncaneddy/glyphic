@@ -11,10 +11,15 @@ pub fn svg_to_pdf(svg: &str) -> Result<Vec<u8>, String> {
 }
 
 #[tauri::command]
+pub fn render_eps(svg: String) -> Result<String, String> {
+    crate::eps::svg_to_eps(&svg)
+}
+
+#[tauri::command]
 pub fn export_vector(svg: String, format: String, path: String) -> Result<(), String> {
     let bytes = match format.as_str() {
         "pdf" => svg_to_pdf(&svg)?,
-        "eps" => crate::eps::svg_to_eps(&svg)?.into_bytes(),
+        "eps" => render_eps(svg)?.into_bytes(),
         other => return Err(format!("Unknown vector format: {other}")),
     };
     std::fs::write(&path, bytes).map_err(|e| e.to_string())

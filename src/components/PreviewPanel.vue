@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { useEditorStore } from "../stores/editor";
 import { useLibraryStore } from "../stores/library";
-import { copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
+import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
 import { setSettings } from "../lib/ipc";
 
 const editor = useEditorStore();
@@ -39,12 +39,13 @@ async function doExport(format: ExportFormat) {
   }
 }
 
-async function doCopy(kind: "png" | "svg") {
+async function doCopy(kind: "png" | "svg" | "eps") {
   const svg = editor.rendered.result?.svg;
   if (!svg) return;
   try {
     if (kind === "png") await copyPngToClipboard(svg, editor.exportSize);
-    else await copySvgToClipboard(svg);
+    else if (kind === "svg") await copySvgToClipboard(svg);
+    else await copyEpsToClipboard(svg);
     status.value = `Copied ${kind.toUpperCase()} to clipboard`;
     try {
       await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
@@ -88,9 +89,11 @@ async function doCopy(kind: "png" | "svg") {
     </div>
     <div class="flex gap-2">
       <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100"
-        :disabled="!editor.rendered.result" @click="doCopy('png')">Copy PNG</button>
+        :disabled="!editor.rendered.result" @click="doCopy('png')">Copy Image</button>
       <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100"
         :disabled="!editor.rendered.result" @click="doCopy('svg')">Copy SVG</button>
+      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100"
+        :disabled="!editor.rendered.result" @click="doCopy('eps')">Copy EPS</button>
     </div>
     <p v-if="status" class="text-xs text-gray-500">{{ status }}</p>
   </div>

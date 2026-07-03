@@ -27,7 +27,7 @@ export async function exportAs(
   if (format === "svg") {
     await invoke("write_file", { path, contents: Array.from(new TextEncoder().encode(svg)) });
   } else if (format === "pdf" || format === "eps") {
-    // The EPS emitter only supports raster images; SVG-sourced logos (presets, SVG uploads)
+    // The EPS emitter only supports raster images; SVG-sourced logos (SVG uploads)
     // must be rasterized first, or export always fails for them.
     const vectorSvg = format === "eps" && svg.includes("data:image/svg+xml")
       ? await rasterizeSvgLogo(svg)
@@ -47,4 +47,12 @@ export async function copyPngToClipboard(svg: string, sizePx: number): Promise<v
 
 export async function copySvgToClipboard(svg: string): Promise<void> {
   await writeText(svg);
+}
+
+export async function copyEpsToClipboard(svg: string): Promise<void> {
+  // The EPS emitter only supports raster images; SVG-sourced logos (SVG uploads)
+  // must be rasterized first, or the render always fails for them.
+  const vectorSvg = svg.includes("data:image/svg+xml") ? await rasterizeSvgLogo(svg) : svg;
+  const eps = await invoke<string>("render_eps", { svg: vectorSvg });
+  await writeText(eps);
 }
