@@ -3,10 +3,6 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const R = (x, y, w, h, rx = 0) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}"/>`;
 
 const icons = {
-  // preset logos
-  "logo-preset-star": `<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 5.9L12 16.4l-5.3 2.9 1.2-5.9L3.4 9.3l6-.7z"/>`,
-  "logo-preset-heart": `<path d="M12 20s-7-4.6-9-9c-1.2-2.7.6-6 3.8-6 2 0 3.5 1.2 4.2 2.5C11.7 6.2 13.2 5 15.2 5c3.2 0 5 3.3 3.8 6-2 4.4-9 9-7 9z"/>`,
-  "logo-preset-bolt": `<path d="M13 2L4 14h6l-1 8 9-12h-6z"/>`,
   // nav / actions (used by Library & Templates views)
   "action-download": `<path d="M11 3h2v10l3.5-3.5L18 11l-6 6-6-6 1.5-1.5L11 13z"/>${R(4, 19, 16, 2)}`,
   "action-copy": `${R(8, 8, 12, 12, 2)}<path d="M4 16V6a2 2 0 0 1 2-2h10v2H6v10z"/>`,

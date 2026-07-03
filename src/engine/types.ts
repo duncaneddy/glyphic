@@ -32,7 +32,7 @@ export const EYE_BALL_SHAPES = ["square", "rounded", "circle", "leaf", "diamond"
 export type EyeBallShape = (typeof EYE_BALL_SHAPES)[number];
 
 export interface LogoStyle {
-  src: string;          // always a data URI (presets are resolved to data URIs by the UI)
+  src: string;          // always a data URI (uploads are resolved to data URIs by the UI)
   sizeRatio: number;    // 0.1–0.3 of full code width
   knockout: boolean;    // clear modules behind the logo
 }

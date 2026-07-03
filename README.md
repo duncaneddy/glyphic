@@ -23,8 +23,7 @@ what that shape renders in a real QR code — there's nothing to replace.
 
 The remaining icons are standalone files in `src/icons/` (24x24 viewBox,
 `fill="currentColor"`). Replace a file, keep the name, and the UI picks it up:
-`logo-preset-<name>.svg`, `action-<name>.svg`. `npm run icons` regenerates these
-8 placeholders (3 logo presets + 5 actions).
+`action-<name>.svg`. `npm run icons` regenerates these placeholders.
 
 ## Data
 

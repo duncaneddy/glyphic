@@ -4,17 +4,9 @@ import { useEditorStore } from "../stores/editor";
 
 const editor = useEditorStore();
 
-const presets = import.meta.glob("../icons/logo-preset-*.svg", {
-  query: "?raw", import: "default", eager: true,
-}) as Record<string, string>;
-
 function setLogo(src: string) {
   editor.config.style.logo = { sizeRatio: 0.2, knockout: true, ...editor.config.style.logo, src };
   if (editor.config.style.ecLevel !== "H") editor.config.style.ecLevel = "H";
-}
-
-function usePreset(svgSource: string) {
-  setLogo(`data:image/svg+xml;base64,${btoa(svgSource.replace(/currentColor/g, "#1f2937"))}`);
 }
 
 function onUpload(e: Event) {
@@ -27,15 +19,12 @@ function onUpload(e: Event) {
 </script>
 
 <template>
-  <SectionCard title="Logo">
+  <SectionCard title="Image">
     <div class="flex items-center gap-2">
       <label class="cursor-pointer rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100">
         Upload image…
         <input type="file" accept="image/png,image/jpeg,image/svg+xml" class="hidden" @change="onUpload" />
       </label>
-      <button v-for="(svg, path) in presets" :key="path"
-        class="h-9 w-9 rounded border border-gray-200 p-1.5 text-gray-600 hover:bg-gray-100 [&>svg]:h-full [&>svg]:w-full"
-        v-html="svg" @click="usePreset(svg)" />
       <button v-if="editor.config.style.logo" class="ml-auto text-sm text-red-500 hover:underline"
         @click="editor.config.style.logo = null">
         Remove

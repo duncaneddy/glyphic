@@ -24,8 +24,8 @@ export function replaceSvgLogoHref(svg: string, replacementHref: string): string
 }
 
 /**
- * EPS export only supports raster images. Rasterize an embedded SVG logo (preset
- * or SVG upload) to a PNG data URI before handing the SVG to the EPS emitter.
+ * EPS export only supports raster images. Rasterize an embedded SVG logo (SVG upload)
+ * to a PNG data URI before handing the SVG to the EPS emitter.
  * No-op when there's no svg-data-URI logo to rasterize.
  */
 export async function rasterizeSvgLogo(svg: string, px = 1024): Promise<string> {
