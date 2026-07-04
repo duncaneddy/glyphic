@@ -4,8 +4,8 @@ import CreateView from "./views/CreateView.vue";
 import LibraryView from "./views/LibraryView.vue";
 import TemplatesView from "./views/TemplatesView.vue";
 import ToastFlash from "./components/ToastFlash.vue";
-import { getSettings } from "./lib/ipc";
 import { useEditorStore } from "./stores/editor";
+import { useSettingsStore } from "./stores/settings";
 import { isValidStyle } from "./lib/validate-style";
 
 const view = ref<"create" | "library" | "templates">("create");
@@ -16,15 +16,11 @@ const NAV = [
 ] as const;
 
 const editor = useEditorStore();
+const settings = useSettingsStore();
 onMounted(async () => {
-  try {
-    const s = await getSettings();
-    const style = s.lastStyle;
-    if (isValidStyle(style)) {
-      editor.applyStyle(style);
-    }
-  } catch {
-    /* first launch or missing backend — keep defaults */
+  const s = await settings.init();
+  if (isValidStyle(s.lastStyle)) {
+    editor.applyStyle(s.lastStyle);
   }
 });
 </script>

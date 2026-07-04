@@ -2,12 +2,13 @@
 import { computed, ref } from "vue";
 import { useEditorStore } from "../stores/editor";
 import { useLibraryStore } from "../stores/library";
+import { useSettingsStore } from "../stores/settings";
 import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
-import { setSettings } from "../lib/ipc";
 import { showToast } from "../lib/toast";
 
 const editor = useEditorStore();
 const library = useLibraryStore();
+const settings = useSettingsStore();
 const SIZES = [256, 512, 1024, 2048, 4096];
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
 const format = ref<ExportFormat>("png");
@@ -25,7 +26,7 @@ function suggestedName(): string {
 async function recordSuccess(svg: string) {
   try {
     await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
-    await setSettings({ lastStyle: JSON.parse(JSON.stringify(editor.config.style)) });
+    await settings.saveLastStyle(JSON.parse(JSON.stringify(editor.config.style)));
   } catch {
     status.value += " (couldn't save to library)";
   }
