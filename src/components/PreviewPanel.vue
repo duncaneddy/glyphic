@@ -2,12 +2,13 @@
 import { computed, ref } from "vue";
 import { useEditorStore } from "../stores/editor";
 import { useLibraryStore } from "../stores/library";
+import { useSettingsStore } from "../stores/settings";
 import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
-import { setSettings } from "../lib/ipc";
 import { showToast } from "../lib/toast";
 
 const editor = useEditorStore();
 const library = useLibraryStore();
+const settings = useSettingsStore();
 const SIZES = [256, 512, 1024, 2048, 4096];
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
 const format = ref<ExportFormat>("png");
@@ -25,7 +26,7 @@ function suggestedName(): string {
 async function recordSuccess(svg: string) {
   try {
     await library.recordHistory(JSON.parse(JSON.stringify(editor.config)), svg);
-    await setSettings({ lastStyle: JSON.parse(JSON.stringify(editor.config.style)) });
+    await settings.saveLastStyle(JSON.parse(JSON.stringify(editor.config.style)));
   } catch {
     status.value += " (couldn't save to library)";
   }
@@ -70,10 +71,11 @@ async function doCopy() {
 
 <template>
   <div class="flex flex-col items-center gap-4">
-    <div class="w-72 h-72 rounded-lg border border-gray-200 bg-white p-3 grid place-items-center">
+    <div class="w-72 h-72 rounded-lg border border-gray-200 p-3 grid place-items-center dark:border-gray-800"
+      :style="settings.surfaceStyle(editor.config.style.background)">
       <div v-if="editor.rendered.result" class="w-full h-full [&>svg]:w-full [&>svg]:h-full"
         v-html="editor.rendered.result.svg" />
-      <p v-else class="text-sm text-gray-400 text-center px-4">{{ editor.rendered.error }}</p>
+      <p v-else class="text-sm text-gray-400 text-center px-4 dark:text-gray-500">{{ editor.rendered.error }}</p>
     </div>
 
     <ul v-if="editor.rendered.result?.warnings.length" class="text-xs text-amber-600 space-y-1">
@@ -81,28 +83,28 @@ async function doCopy() {
     </ul>
 
     <div class="flex items-center gap-2 text-sm">
-      <label class="flex items-center gap-2 text-gray-600">
+      <label class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
         Format:
-        <select v-model="format" class="rounded border border-gray-300 px-2 py-1">
+        <select v-model="format" class="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
           <option v-for="fmt in FORMATS" :key="fmt" :value="fmt">{{ fmt.toUpperCase() }}</option>
         </select>
       </label>
-      <label v-if="showRasterSize" class="flex items-center gap-2 text-gray-600">
+      <label v-if="showRasterSize" class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
         Size:
-        <select v-model.number="editor.exportSize" class="rounded border border-gray-300 px-2 py-1">
+        <select v-model.number="editor.exportSize" class="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
           <option v-for="s in SIZES" :key="s" :value="s">{{ s }} px</option>
         </select>
       </label>
     </div>
 
     <div class="flex gap-2">
-      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100"
+      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-gray-500 dark:hover:bg-gray-800"
         :disabled="!editor.rendered.result" @click="doSave">Save</button>
-      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100 disabled:text-gray-300"
+      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100 disabled:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-800 dark:disabled:text-gray-600"
         :disabled="!editor.rendered.result || format === 'pdf'"
         :title="format === 'pdf' ? `PDF can't go to the clipboard — use Save` : undefined"
         @click="doCopy">Copy</button>
     </div>
-    <p v-if="status" class="text-xs text-gray-500">{{ status }}</p>
+    <p v-if="status" class="text-xs text-gray-500 dark:text-gray-400">{{ status }}</p>
   </div>
 </template>

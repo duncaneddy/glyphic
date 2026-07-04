@@ -2,18 +2,20 @@
 import { onMounted, reactive, ref } from "vue";
 import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
+import { useSettingsStore } from "../stores/settings";
 import type { HistoryEntry, QrConfig } from "../engine/types";
 import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
 import { showToast } from "../lib/toast";
 
 const library = useLibraryStore();
 const editor = useEditorStore();
+const settings = useSettingsStore();
 const emit = defineEmits<{ edit: [] }>();
 const error = ref("");
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
 const formats = reactive<Record<string, ExportFormat>>({});
-const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100";
-const deleteBtnClass = "rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50";
+const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800";
+const deleteBtnClass = "rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950";
 
 onMounted(() => library.refresh());
 
@@ -80,23 +82,24 @@ async function remove(entry: HistoryEntry) {
   <div class="h-full overflow-y-auto p-6">
     <h1 class="mb-4 text-lg font-semibold">Library</h1>
     <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
-    <p v-if="!library.history.length" class="text-sm text-gray-400">
+    <p v-if="!library.history.length" class="text-sm text-gray-400 dark:text-gray-500">
       Codes you export or copy are saved here automatically.
     </p>
     <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
       <div v-for="entry in library.history" :key="entry.id"
-        class="relative rounded-lg border border-gray-200 bg-white p-4">
-        <div class="mb-2 aspect-square [&>svg]:h-full [&>svg]:w-full" v-html="entry.previewSvg" />
+        class="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+        <div class="mb-2 aspect-square rounded [&>svg]:h-full [&>svg]:w-full"
+          :style="settings.surfaceStyle(entry.config.style.background)" v-html="entry.previewSvg" />
         <p class="truncate text-sm font-medium" :title="entry.name">{{ entry.name }}</p>
-        <p class="text-xs text-gray-400">{{ new Date(entry.createdAt).toLocaleString() }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500">{{ new Date(entry.createdAt).toLocaleString() }}</p>
         <div class="mt-2 flex items-center gap-2 text-xs">
-          <select class="flex-1 min-w-0 rounded border border-gray-300 px-2.5 py-1 text-xs"
+          <select class="flex-1 min-w-0 rounded border border-gray-300 px-2.5 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
             :value="formatFor(entry.id)"
             @change="setFormat(entry.id, ($event.target as HTMLSelectElement).value as ExportFormat)">
             <option v-for="fmt in FORMATS" :key="fmt" :value="fmt">{{ fmt.toUpperCase() }}</option>
           </select>
           <button :class="btnClass" class="shrink-0" @click="save(entry)">Save</button>
-          <button :class="btnClass" class="shrink-0 disabled:pointer-events-none disabled:text-gray-300"
+          <button :class="btnClass" class="shrink-0 disabled:pointer-events-none disabled:text-gray-300 dark:disabled:text-gray-600"
             :disabled="formatFor(entry.id) === 'pdf'"
             :title="formatFor(entry.id) === 'pdf' ? `PDF can't go to the clipboard — use Save` : undefined"
             @click="copy(entry)">Copy</button>
