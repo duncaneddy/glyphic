@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { useLibraryStore } from "../stores/library";
@@ -8,7 +8,8 @@ import { useSettingsStore } from "../stores/settings";
 import { renderSvg } from "../engine/render";
 import { isValidStyle } from "../lib/validate-style";
 import { showToast } from "../lib/toast";
-import type { QrStyle, Template } from "../engine/types";
+import { BODY_SHAPES, type BodyShape, type QrStyle, type Template } from "../engine/types";
+import { queryTemplates, TEMPLATE_SORT_LABELS, type TemplateSort } from "../lib/library-query";
 
 const library = useLibraryStore();
 const editor = useEditorStore();
@@ -19,6 +20,17 @@ const renameText = ref("");
 const error = ref("");
 const btnClass = "w-full rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800";
 const deleteBtnClass = "col-span-2 rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950";
+const controlClass = "rounded border border-gray-300 px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100";
+
+const search = ref("");
+const bodyShape = ref<BodyShape | "all">("all");
+const sort = ref<TemplateSort>("name-asc");
+const visibleTemplates = computed(() =>
+  queryTemplates(library.templates, { search: search.value, bodyShape: bodyShape.value, sort: sort.value }));
+
+function shapeLabel(shape: BodyShape): string {
+  return shape.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
+}
 
 onMounted(() => library.refresh());
 
@@ -118,12 +130,26 @@ async function importTemplate() {
       <button class="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
         @click="importTemplate">Import…</button>
     </div>
+    <div v-if="library.templates.length" class="mb-4 flex flex-wrap items-center gap-2">
+      <input v-model="search" type="search" placeholder="Search templates…"
+        :class="controlClass" class="min-w-0 flex-1 basis-40" />
+      <select v-model="bodyShape" :class="controlClass" aria-label="Filter by body shape">
+        <option value="all">All shapes</option>
+        <option v-for="shape in BODY_SHAPES" :key="shape" :value="shape">{{ shapeLabel(shape) }}</option>
+      </select>
+      <select v-model="sort" :class="controlClass" aria-label="Sort by">
+        <option v-for="(label, value) in TEMPLATE_SORT_LABELS" :key="value" :value="value">{{ label }}</option>
+      </select>
+    </div>
     <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
     <p v-if="!library.templates.length" class="text-sm text-gray-400 dark:text-gray-500">
       Save a style from the editor to reuse it here.
     </p>
+    <p v-else-if="!visibleTemplates.length" class="text-sm text-gray-400 dark:text-gray-500">
+      No templates match your search or filters.
+    </p>
     <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-      <div v-for="t in library.templates" :key="t.id" class="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+      <div v-for="t in visibleTemplates" :key="t.id" class="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <div class="mb-2 aspect-square rounded [&>svg]:h-full [&>svg]:w-full"
           :style="settings.surfaceStyle(t.style.background)" v-html="swatch(t.style)" />
         <input v-if="renaming === t.id" v-model="renameText" class="w-full rounded border px-1 text-sm dark:bg-gray-800 dark:text-gray-100"
