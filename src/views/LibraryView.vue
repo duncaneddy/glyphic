@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
 import { useSettingsStore } from "../stores/settings";
-import type { HistoryEntry, QrConfig } from "../engine/types";
+import type { ContentType, HistoryEntry, QrConfig } from "../engine/types";
 import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
 import { showToast } from "../lib/toast";
+import { CONTENT_KIND_LABELS, HISTORY_SORT_LABELS, queryHistory, type HistorySort } from "../lib/library-query";
 
 const library = useLibraryStore();
 const editor = useEditorStore();
@@ -16,6 +17,13 @@ const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
 const formats = reactive<Record<string, ExportFormat>>({});
 const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800";
 const deleteBtnClass = "rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950";
+const controlClass = "rounded border border-gray-300 px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100";
+
+const search = ref("");
+const kind = ref<ContentType | "all">("all");
+const sort = ref<HistorySort>("newest");
+const visibleHistory = computed(() =>
+  queryHistory(library.history, { search: search.value, kind: kind.value, sort: sort.value }));
 
 onMounted(() => library.refresh());
 
@@ -81,12 +89,26 @@ async function remove(entry: HistoryEntry) {
 <template>
   <div class="h-full overflow-y-auto p-6">
     <h1 class="mb-4 text-lg font-semibold">Library</h1>
+    <div v-if="library.history.length" class="mb-4 flex flex-wrap items-center gap-2">
+      <input v-model="search" type="search" placeholder="Search codes…"
+        :class="controlClass" class="min-w-0 flex-1 basis-40" />
+      <select v-model="kind" :class="controlClass" aria-label="Filter by kind">
+        <option value="all">All kinds</option>
+        <option v-for="(label, value) in CONTENT_KIND_LABELS" :key="value" :value="value">{{ label }}</option>
+      </select>
+      <select v-model="sort" :class="controlClass" aria-label="Sort by">
+        <option v-for="(label, value) in HISTORY_SORT_LABELS" :key="value" :value="value">{{ label }}</option>
+      </select>
+    </div>
     <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
     <p v-if="!library.history.length" class="text-sm text-gray-400 dark:text-gray-500">
       Codes you export or copy are saved here automatically.
     </p>
+    <p v-else-if="!visibleHistory.length" class="text-sm text-gray-400 dark:text-gray-500">
+      No codes match your search or filters.
+    </p>
     <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-      <div v-for="entry in library.history" :key="entry.id"
+      <div v-for="entry in visibleHistory" :key="entry.id"
         class="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <div class="mb-2 aspect-square rounded [&>svg]:h-full [&>svg]:w-full"
           :style="settings.surfaceStyle(entry.config.style.background)" v-html="entry.previewSvg" />
