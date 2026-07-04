@@ -16,11 +16,11 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 </script>
 
 <template>
-  <div class="fixed inset-0 z-40 grid place-items-center bg-black/40" @click.self="emit('close')">
+  <div class="fixed inset-0 z-40 grid place-items-center bg-black/40" @pointerdown.self="emit('close')">
     <div class="w-96 rounded-lg border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-gray-900">
       <div class="mb-4 flex items-center justify-between">
         <h2 class="font-medium">Settings</h2>
-        <button class="rounded px-2 py-0.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+        <button class="rounded px-2 py-0.5 text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-800"
           aria-label="Close settings" @click="emit('close')">✕</button>
       </div>
 

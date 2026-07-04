@@ -26,22 +26,36 @@ export const useSettingsStore = defineStore("settings", () => {
   watchEffect(() => {
     document.documentElement.classList.toggle("dark", effectiveTheme.value === "dark");
     // Native chrome (titlebar tint, dialogs). No-op outside Tauri (e.g. plain vite dev).
-    getCurrentWindow()
-      .setTheme(theme.value === "auto" ? null : theme.value)
-      .catch(() => {});
+    try {
+      getCurrentWindow()
+        .setTheme(theme.value === "auto" ? null : theme.value)
+        .catch(() => {});
+    } catch {
+      /* not running inside Tauri */
+    }
   });
 
-  async function persist(patch: Settings) {
+  // Serialize writes: concurrent set_settings calls could otherwise land out of
+  // order and leave an older snapshot on disk.
+  let writeQueue: Promise<void> = Promise.resolve();
+
+  function persist(patch: Settings): Promise<void> {
     persisted = { ...persisted, ...patch };
-    await setSettings(persisted);
+    const snapshot = persisted;
+    const write = writeQueue.then(() => setSettings(snapshot));
+    writeQueue = write.catch(() => {});
+    return write;
   }
 
   async function init(): Promise<Settings> {
+    let loaded: Settings = {};
     try {
-      persisted = await getSettings();
+      loaded = await getSettings();
     } catch {
-      persisted = {}; // first launch or missing backend — keep defaults
+      /* first launch or missing backend — keep defaults */
     }
+    // Writes that raced the load win over what was on disk.
+    persisted = { ...loaded, ...persisted };
     const n = normalizeAppSettings(persisted);
     theme.value = n.theme;
     previewBg.value = n.previewBg;
