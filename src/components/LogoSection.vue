@@ -39,7 +39,7 @@ async function onUpload(e: Event) {
 <template>
   <SectionCard title="Image">
     <div class="flex items-center gap-2">
-      <label class="cursor-pointer rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100">
+      <label class="cursor-pointer rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800">
         Upload image…
         <input type="file" accept="image/png,image/jpeg,image/svg+xml" class="hidden" @change="onUpload" />
       </label>
@@ -61,16 +61,16 @@ async function onUpload(e: Event) {
         Clear modules behind logo
       </label>
       <label v-if="editor.config.style.logo.knockout" class="flex items-center gap-2 pl-6 text-sm">
-        <select v-model="editor.config.style.logo.knockoutMode" class="rounded border border-gray-300 px-2 py-1 text-xs">
+        <select v-model="editor.config.style.logo.knockoutMode" class="rounded border border-gray-300 px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
           <option value="shape">Around artwork</option>
           <option value="box">Full box</option>
         </select>
       </label>
     </template>
 
-    <label class="flex items-center gap-2 border-t border-gray-100 pt-3 text-sm">
+    <label class="flex items-center gap-2 border-t border-gray-100 pt-3 text-sm dark:border-gray-800">
       Error correction
-      <select v-model="editor.config.style.ecLevel" class="rounded border border-gray-300 px-2 py-1">
+      <select v-model="editor.config.style.ecLevel" class="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
         <option value="L">L (7%)</option><option value="M">M (15%)</option>
         <option value="Q">Q (25%)</option><option value="H">H (30%)</option>
       </select>

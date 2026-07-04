@@ -28,17 +28,17 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex h-screen flex-col bg-gray-50 text-gray-900">
-    <header data-tauri-drag-region class="flex h-12 shrink-0 items-center gap-1 border-b border-gray-200 bg-gray-50 pl-20 pr-3">
+  <div class="flex h-screen flex-col bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+    <header data-tauri-drag-region class="flex h-12 shrink-0 items-center gap-1 border-b border-gray-200 bg-gray-50 pl-20 pr-3 dark:border-gray-800 dark:bg-gray-950">
       <p class="mr-2 text-sm font-bold tracking-tight">Glyphic</p>
       <button v-for="n in NAV" :key="n.id"
         class="rounded px-3 py-1.5 text-sm"
-        :class="view === n.id ? 'bg-gray-900 text-white' : 'hover:bg-gray-100'"
+        :class="view === n.id ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'"
         @click="view = n.id">
         {{ n.label }}
       </button>
       <div data-tauri-drag-region class="flex-1"></div>
-      <button class="rounded p-1.5 text-gray-600 hover:bg-gray-100" aria-label="Settings" title="Settings"
+      <button class="rounded p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800" aria-label="Settings" title="Settings"
         @click="showSettings = true">
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round">
