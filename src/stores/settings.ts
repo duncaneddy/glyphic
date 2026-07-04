@@ -55,7 +55,13 @@ export const useSettingsStore = defineStore("settings", () => {
       /* first launch or missing backend — keep defaults */
     }
     // Writes that raced the load win over what was on disk.
+    const raced = Object.keys(persisted).length > 0;
     persisted = { ...loaded, ...persisted };
+    if (raced) {
+      // A pre-load write captured a snapshot missing the on-disk keys;
+      // queue a write of the merged state to heal the file.
+      void persist({});
+    }
     const n = normalizeAppSettings(persisted);
     theme.value = n.theme;
     previewBg.value = n.previewBg;
