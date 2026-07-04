@@ -71,7 +71,8 @@ async function doCopy() {
 
 <template>
   <div class="flex flex-col items-center gap-4">
-    <div class="w-72 h-72 rounded-lg border border-gray-200 bg-white p-3 grid place-items-center">
+    <div class="w-72 h-72 rounded-lg border border-gray-200 p-3 grid place-items-center"
+      :style="settings.surfaceStyle(editor.config.style.background)">
       <div v-if="editor.rendered.result" class="w-full h-full [&>svg]:w-full [&>svg]:h-full"
         v-html="editor.rendered.result.svg" />
       <p v-else class="text-sm text-gray-400 text-center px-4">{{ editor.rendered.error }}</p>

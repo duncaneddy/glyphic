@@ -2,12 +2,14 @@
 import { onMounted, reactive, ref } from "vue";
 import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
+import { useSettingsStore } from "../stores/settings";
 import type { HistoryEntry, QrConfig } from "../engine/types";
 import { copyEpsToClipboard, copyPngToClipboard, copySvgToClipboard, exportAs, type ExportFormat } from "../lib/exporter";
 import { showToast } from "../lib/toast";
 
 const library = useLibraryStore();
 const editor = useEditorStore();
+const settings = useSettingsStore();
 const emit = defineEmits<{ edit: [] }>();
 const error = ref("");
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
@@ -86,7 +88,8 @@ async function remove(entry: HistoryEntry) {
     <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
       <div v-for="entry in library.history" :key="entry.id"
         class="relative rounded-lg border border-gray-200 bg-white p-4">
-        <div class="mb-2 aspect-square [&>svg]:h-full [&>svg]:w-full" v-html="entry.previewSvg" />
+        <div class="mb-2 aspect-square rounded [&>svg]:h-full [&>svg]:w-full"
+          :style="settings.surfaceStyle(entry.config.style.background)" v-html="entry.previewSvg" />
         <p class="truncate text-sm font-medium" :title="entry.name">{{ entry.name }}</p>
         <p class="text-xs text-gray-400">{{ new Date(entry.createdAt).toLocaleString() }}</p>
         <div class="mt-2 flex items-center gap-2 text-xs">

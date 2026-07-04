@@ -4,6 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { useLibraryStore } from "../stores/library";
 import { useEditorStore } from "../stores/editor";
+import { useSettingsStore } from "../stores/settings";
 import { renderSvg } from "../engine/render";
 import { isValidStyle } from "../lib/validate-style";
 import { showToast } from "../lib/toast";
@@ -11,6 +12,7 @@ import type { QrStyle, Template } from "../engine/types";
 
 const library = useLibraryStore();
 const editor = useEditorStore();
+const settings = useSettingsStore();
 const emit = defineEmits<{ edit: [] }>();
 const renaming = ref<string | null>(null);
 const renameText = ref("");
@@ -122,7 +124,8 @@ async function importTemplate() {
     </p>
     <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
       <div v-for="t in library.templates" :key="t.id" class="relative rounded-lg border border-gray-200 bg-white p-4">
-        <div class="mb-2 aspect-square [&>svg]:h-full [&>svg]:w-full" v-html="swatch(t.style)" />
+        <div class="mb-2 aspect-square rounded [&>svg]:h-full [&>svg]:w-full"
+          :style="settings.surfaceStyle(t.style.background)" v-html="swatch(t.style)" />
         <input v-if="renaming === t.id" v-model="renameText" class="w-full rounded border px-1 text-sm"
           @keydown.enter="commitRename(t)" @blur="commitRename(t)" />
         <p v-else class="truncate text-sm font-medium" :title="t.name"
