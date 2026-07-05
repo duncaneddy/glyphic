@@ -17,28 +17,28 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 
 <template>
   <div class="fixed inset-0 z-40 grid place-items-center bg-black/40" @pointerdown.self="emit('close')">
-    <div class="w-96 rounded-lg border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-gray-900">
+    <div class="w-96 rounded-lg border border-gray-200 bg-white p-5 shadow-xl dark:border-[#3a3a3a] dark:bg-[#2a2a2a]">
       <div class="mb-4 flex items-center justify-between">
         <h2 class="font-medium">Settings</h2>
-        <button class="rounded px-2 py-0.5 text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-800"
+        <button class="rounded px-2 py-0.5 text-gray-400 hover:bg-gray-100 dark:text-neutral-500 dark:hover:bg-[#333333]"
           aria-label="Close settings" @click="emit('close')">✕</button>
       </div>
 
       <div class="space-y-4 text-sm">
         <div class="flex items-center justify-between">
-          <span class="text-gray-600 dark:text-gray-400">Theme</span>
-          <div class="flex overflow-hidden rounded border border-gray-300 dark:border-gray-600">
+          <span class="text-gray-600 dark:text-neutral-400">Theme</span>
+          <div class="flex overflow-hidden rounded border border-gray-300 dark:border-[#4a4a4a]">
             <button v-for="t in THEME_SETTINGS" :key="t" class="px-3 py-1"
               :class="settings.theme === t
-                ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
-                : 'hover:bg-gray-100 dark:hover:bg-gray-800'"
+                ? 'bg-gray-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+                : 'hover:bg-gray-100 dark:hover:bg-[#333333]'"
               @click="settings.setTheme(t)">
               {{ LABELS[t] }}
             </button>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-gray-100 pt-4 dark:border-[#3a3a3a]">
           <label class="inline-flex items-center gap-2">
             <input type="checkbox" :checked="settings.previewBg.enabled"
               @change="settings.setPreviewBg({ ...settings.previewBg, enabled: ($event.target as HTMLInputElement).checked })" />

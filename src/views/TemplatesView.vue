@@ -18,9 +18,9 @@ const emit = defineEmits<{ edit: [] }>();
 const renaming = ref<string | null>(null);
 const renameText = ref("");
 const error = ref("");
-const btnClass = "w-full rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800";
+const btnClass = "w-full rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100 dark:border-[#4a4a4a] dark:hover:bg-[#333333]";
 const deleteBtnClass = "col-span-2 rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950";
-const controlClass = "rounded border border-gray-300 px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100";
+const controlClass = "rounded border border-gray-300 px-2.5 py-1.5 text-sm dark:border-[#4a4a4a] dark:bg-[#333333] dark:text-neutral-100";
 
 const search = ref("");
 const sort = ref<TemplateSort>("name-asc");
@@ -122,7 +122,7 @@ async function importTemplate() {
   <div class="h-full overflow-y-auto p-6">
     <div class="mb-4 flex items-center justify-between">
       <h1 class="text-lg font-semibold">Templates</h1>
-      <button class="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
+      <button class="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-[#4a4a4a] dark:hover:bg-[#333333]"
         @click="importTemplate">Import…</button>
     </div>
     <div v-if="library.templates.length" class="mb-4 flex flex-wrap items-center gap-2">
@@ -133,17 +133,17 @@ async function importTemplate() {
       </select>
     </div>
     <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
-    <p v-if="!library.templates.length" class="text-sm text-gray-400 dark:text-gray-500">
+    <p v-if="!library.templates.length" class="text-sm text-gray-400 dark:text-neutral-500">
       Save a style from the editor to reuse it here.
     </p>
-    <p v-else-if="!visibleTemplates.length" class="text-sm text-gray-400 dark:text-gray-500">
+    <p v-else-if="!visibleTemplates.length" class="text-sm text-gray-400 dark:text-neutral-500">
       No templates match your search or filters.
     </p>
     <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-      <div v-for="t in visibleTemplates" :key="t.id" class="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+      <div v-for="t in visibleTemplates" :key="t.id" class="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-[#3a3a3a] dark:bg-[#2a2a2a]">
         <div class="mb-2 aspect-square rounded [&>svg]:h-full [&>svg]:w-full"
           :style="settings.surfaceStyle(t.style.background)" v-html="swatch(t.style)" />
-        <input v-if="renaming === t.id" v-model="renameText" class="w-full rounded border px-1 text-sm dark:bg-gray-800 dark:text-gray-100"
+        <input v-if="renaming === t.id" v-model="renameText" class="w-full rounded border px-1 text-sm dark:bg-[#333333] dark:text-neutral-100"
           @keydown.enter="commitRename(t)" @blur="commitRename(t)" />
         <p v-else class="truncate text-sm font-medium" :title="t.name"
           @dblclick="renaming = t.id; renameText = t.name">{{ t.name }}</p>

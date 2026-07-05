@@ -27,7 +27,7 @@ function setMode(mode: Fill["type"]) {
       <button v-for="m in (['solid', 'linear', 'radial'] as const)" :key="m"
         class="rounded-full border px-3 py-1 text-xs capitalize"
         :class="editor.config.style.fill.type === m
-          ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900' : 'border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800'"
+          ? 'border-gray-900 bg-gray-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900' : 'border-gray-300 hover:bg-gray-100 dark:border-[#4a4a4a] dark:hover:bg-[#333333]'"
         @click="setMode(m)">
         {{ m === "solid" ? "Single color" : m === "linear" ? "Linear gradient" : "Radial gradient" }}
       </button>
@@ -51,7 +51,7 @@ function setMode(mode: Fill["type"]) {
       </template>
     </div>
 
-    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-gray-100 pt-3 text-sm dark:border-gray-800">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-gray-100 pt-3 text-sm dark:border-[#3a3a3a]">
       <label class="inline-flex items-center gap-2">
         <input type="checkbox" :checked="editor.config.style.background !== null"
           @change="editor.config.style.background =
@@ -62,7 +62,7 @@ function setMode(mode: Fill["type"]) {
         v-model="editor.config.style.background" />
     </div>
 
-    <div class="space-y-2 border-t border-gray-100 pt-3 text-sm dark:border-gray-800">
+    <div class="space-y-2 border-t border-gray-100 pt-3 text-sm dark:border-[#3a3a3a]">
       <label class="flex items-center gap-2">
         <input v-model="editor.config.style.customEyeColor" type="checkbox" /> Custom eye color
       </label>

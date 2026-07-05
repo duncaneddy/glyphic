@@ -71,11 +71,11 @@ async function doCopy() {
 
 <template>
   <div class="flex flex-col items-center gap-4">
-    <div class="w-72 h-72 rounded-lg border border-gray-200 p-3 grid place-items-center dark:border-gray-800"
+    <div class="w-72 h-72 rounded-lg border border-gray-200 p-3 grid place-items-center dark:border-[#3a3a3a]"
       :style="settings.surfaceStyle(editor.config.style.background)">
       <div v-if="editor.rendered.result" class="w-full h-full [&>svg]:w-full [&>svg]:h-full"
         v-html="editor.rendered.result.svg" />
-      <p v-else class="text-sm text-gray-400 text-center px-4 dark:text-gray-500">{{ editor.rendered.error }}</p>
+      <p v-else class="text-sm text-gray-400 text-center px-4 dark:text-neutral-500">{{ editor.rendered.error }}</p>
     </div>
 
     <ul v-if="editor.rendered.result?.warnings.length" class="text-xs text-amber-600 space-y-1">
@@ -83,28 +83,28 @@ async function doCopy() {
     </ul>
 
     <div class="flex items-center gap-2 text-sm">
-      <label class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+      <label class="flex items-center gap-2 text-gray-600 dark:text-neutral-400">
         Format:
-        <select v-model="format" class="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
+        <select v-model="format" class="rounded border border-gray-300 px-2 py-1 dark:border-[#4a4a4a] dark:bg-[#333333] dark:text-neutral-100">
           <option v-for="fmt in FORMATS" :key="fmt" :value="fmt">{{ fmt.toUpperCase() }}</option>
         </select>
       </label>
-      <label v-if="showRasterSize" class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+      <label v-if="showRasterSize" class="flex items-center gap-2 text-gray-600 dark:text-neutral-400">
         Size:
-        <select v-model.number="editor.exportSize" class="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
+        <select v-model.number="editor.exportSize" class="rounded border border-gray-300 px-2 py-1 dark:border-[#4a4a4a] dark:bg-[#333333] dark:text-neutral-100">
           <option v-for="s in SIZES" :key="s" :value="s">{{ s }} px</option>
         </select>
       </label>
     </div>
 
     <div class="flex gap-2">
-      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-gray-500 dark:hover:bg-gray-800"
+      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-[#5a5a5a] dark:hover:bg-[#333333]"
         :disabled="!editor.rendered.result" @click="doSave">Save</button>
-      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100 disabled:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-800 dark:disabled:text-gray-600"
+      <button class="rounded border border-gray-400 px-3 py-1.5 text-sm hover:bg-gray-100 disabled:text-gray-300 dark:border-[#5a5a5a] dark:hover:bg-[#333333] dark:disabled:text-neutral-600"
         :disabled="!editor.rendered.result || format === 'pdf'"
         :title="format === 'pdf' ? `PDF can't go to the clipboard — use Save` : undefined"
         @click="doCopy">Copy</button>
     </div>
-    <p v-if="status" class="text-xs text-gray-500 dark:text-gray-400">{{ status }}</p>
+    <p v-if="status" class="text-xs text-gray-500 dark:text-neutral-400">{{ status }}</p>
   </div>
 </template>

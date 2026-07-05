@@ -15,9 +15,9 @@ const emit = defineEmits<{ edit: [] }>();
 const error = ref("");
 const FORMATS: ExportFormat[] = ["svg", "png", "jpeg", "webp", "pdf", "eps"];
 const formats = reactive<Record<string, ExportFormat>>({});
-const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800";
+const btnClass = "rounded border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-100 dark:border-[#4a4a4a] dark:hover:bg-[#333333]";
 const deleteBtnClass = "rounded border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950";
-const controlClass = "rounded border border-gray-300 px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100";
+const controlClass = "rounded border border-gray-300 px-2.5 py-1.5 text-sm dark:border-[#4a4a4a] dark:bg-[#333333] dark:text-neutral-100";
 
 const search = ref("");
 const kind = ref<ContentType | "all">("all");
@@ -101,27 +101,27 @@ async function remove(entry: HistoryEntry) {
       </select>
     </div>
     <p v-if="error" class="text-xs text-red-500 mb-2">{{ error }}</p>
-    <p v-if="!library.history.length" class="text-sm text-gray-400 dark:text-gray-500">
+    <p v-if="!library.history.length" class="text-sm text-gray-400 dark:text-neutral-500">
       Codes you export or copy are saved here automatically.
     </p>
-    <p v-else-if="!visibleHistory.length" class="text-sm text-gray-400 dark:text-gray-500">
+    <p v-else-if="!visibleHistory.length" class="text-sm text-gray-400 dark:text-neutral-500">
       No codes match your search or filters.
     </p>
     <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
       <div v-for="entry in visibleHistory" :key="entry.id"
-        class="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+        class="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-[#3a3a3a] dark:bg-[#2a2a2a]">
         <div class="mb-2 aspect-square rounded [&>svg]:h-full [&>svg]:w-full"
           :style="settings.surfaceStyle(entry.config.style.background)" v-html="entry.previewSvg" />
         <p class="truncate text-sm font-medium" :title="entry.name">{{ entry.name }}</p>
-        <p class="text-xs text-gray-400 dark:text-gray-500">{{ new Date(entry.createdAt).toLocaleString() }}</p>
+        <p class="text-xs text-gray-400 dark:text-neutral-500">{{ new Date(entry.createdAt).toLocaleString() }}</p>
         <div class="mt-2 flex items-center gap-2 text-xs">
-          <select class="flex-1 min-w-0 rounded border border-gray-300 px-2.5 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          <select class="flex-1 min-w-0 rounded border border-gray-300 px-2.5 py-1 text-xs dark:border-[#4a4a4a] dark:bg-[#333333] dark:text-neutral-100"
             :value="formatFor(entry.id)"
             @change="setFormat(entry.id, ($event.target as HTMLSelectElement).value as ExportFormat)">
             <option v-for="fmt in FORMATS" :key="fmt" :value="fmt">{{ fmt.toUpperCase() }}</option>
           </select>
           <button :class="btnClass" class="shrink-0" @click="save(entry)">Save</button>
-          <button :class="btnClass" class="shrink-0 disabled:pointer-events-none disabled:text-gray-300 dark:disabled:text-gray-600"
+          <button :class="btnClass" class="shrink-0 disabled:pointer-events-none disabled:text-gray-300 dark:disabled:text-neutral-600"
             :disabled="formatFor(entry.id) === 'pdf'"
             :title="formatFor(entry.id) === 'pdf' ? `PDF can't go to the clipboard — use Save` : undefined"
             @click="copy(entry)">Copy</button>

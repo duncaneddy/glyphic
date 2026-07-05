@@ -9,9 +9,9 @@ function onText(e: Event) {
 
 <template>
   <span class="inline-flex items-center gap-1.5">
-    <input type="color" :value="modelValue" class="h-7 w-9 cursor-pointer rounded border border-gray-300 dark:border-gray-600"
+    <input type="color" :value="modelValue" class="h-7 w-9 cursor-pointer rounded border border-gray-300 dark:border-[#4a4a4a]"
       @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
     <input type="text" :value="modelValue" size="7"
-      class="min-w-0 rounded border border-gray-300 px-1.5 py-0.5 font-mono text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100" @change="onText" />
+      class="min-w-0 rounded border border-gray-300 px-1.5 py-0.5 font-mono text-xs dark:border-[#4a4a4a] dark:bg-[#333333] dark:text-neutral-100" @change="onText" />
   </span>
 </template>

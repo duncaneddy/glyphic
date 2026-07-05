@@ -10,7 +10,7 @@ const { toast } = useToast();
       enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100"
       leave-active-class="transition duration-150 ease-in"
       leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-      <div v-if="toast" class="flex items-center gap-2 rounded-full bg-gray-900/85 px-5 py-2.5 text-sm text-white dark:bg-gray-100/90 dark:text-gray-900">
+      <div v-if="toast" class="flex items-center gap-2 rounded-full bg-gray-900/85 px-5 py-2.5 text-sm text-white dark:bg-neutral-100/90 dark:text-neutral-900">
         <span class="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-green-500">
           <svg viewBox="0 0 12 12" class="h-2.5 w-2.5" fill="none" stroke="white" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
