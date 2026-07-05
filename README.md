@@ -2,9 +2,15 @@
 
 ![Glyphic — a styled QR code being designed in the Create view](assets/demo.gif)
 
-Cross-platform desktop QR code studio (Tauri 2 + Vue 3). Design styled QR codes —
-colors, gradients, custom eyes, logos, body/eye shapes — export as SVG, PNG, JPEG,
-WebP, PDF, or EPS, and manage a library of past codes and reusable style templates.
+Cross-platform desktop QR code studio. Design styled QR codes - customizing colors,
+gradients, shapes - then copy or export as an image. You can save past styles to
+quickly and easily reapply them, as well as manage your library of past codes.
+
+## Data
+
+Templates, history, and settings are JSON files in the OS app-data directory
+(`~/Library/Application Support/dev.duncaneddy.glyphic` on macOS). Template files
+are self-contained and shareable.
 
 ## Development
 
@@ -26,9 +32,3 @@ what that shape renders in a real QR code — there's nothing to replace.
 The remaining icons are standalone files in `src/icons/` (24x24 viewBox,
 `fill="currentColor"`). Replace a file, keep the name, and the UI picks it up:
 `action-<name>.svg`. `npm run icons` regenerates these placeholders.
-
-## Data
-
-Templates, history, and settings are JSON files in the OS app-data directory
-(`~/Library/Application Support/dev.duncaneddy.glyphic` on macOS). Template files
-are self-contained and shareable.
