@@ -22,6 +22,7 @@ Uses [just](https://github.com/casey/just):
 - `just check` — typecheck + all tests (what CI runs)
 - `just build` — release bundles for this platform
 - `just icons` — regenerate placeholder icons (overwrites all)
+- `just set-version 0.3.1` — bump the version across all manifests
 
 ## Replacing placeholder icons
 
