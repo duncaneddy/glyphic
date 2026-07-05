@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Glyphic",
-  "version": "0.3.0",
-  "identifier": "dev.duncaneddy.glyphic",
+  "version": "0.3.1",
+  "identifier": "dev.argoinnovations.glyphic",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
