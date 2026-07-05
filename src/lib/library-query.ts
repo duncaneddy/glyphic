@@ -1,4 +1,4 @@
-import type { BodyShape, ContentType, HistoryEntry, Template } from "../engine/types";
+import type { ContentType, HistoryEntry, Template } from "../engine/types";
 
 export type HistorySort = "newest" | "oldest" | "name-asc" | "name-desc";
 export type TemplateSort = "name-asc" | "name-desc" | "newest" | "oldest" | "updated";
@@ -11,7 +11,6 @@ export interface HistoryQuery {
 
 export interface TemplateQuery {
   search: string;
-  bodyShape: BodyShape | "all";
   sort: TemplateSort;
 }
 
@@ -65,11 +64,7 @@ export function queryHistory(entries: HistoryEntry[], query: HistoryQuery): Hist
 }
 
 export function queryTemplates(templates: Template[], query: TemplateQuery): Template[] {
-  const out = templates.filter(
-    (t) =>
-      (query.bodyShape === "all" || t.style.bodyShape === query.bodyShape) &&
-      matchesSearch(t.name, query.search),
-  );
+  const out = templates.filter((t) => matchesSearch(t.name, query.search));
   switch (query.sort) {
     case "name-asc": out.sort(byName); break;
     case "name-desc": out.sort((a, b) => byName(b, a)); break;
