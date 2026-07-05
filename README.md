@@ -1,5 +1,7 @@
 # Glyphic
 
+![Glyphic — a styled QR code being designed in the Create view](assets/demo.gif)
+
 Cross-platform desktop QR code studio (Tauri 2 + Vue 3). Design styled QR codes —
 colors, gradients, custom eyes, logos, body/eye shapes — export as SVG, PNG, JPEG,
 WebP, PDF, or EPS, and manage a library of past codes and reusable style templates.
