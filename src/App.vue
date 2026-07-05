@@ -28,9 +28,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex h-screen flex-col bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-    <header data-tauri-drag-region class="flex h-12 shrink-0 items-center gap-1 border-b border-gray-200 bg-gray-50 pl-20 pr-3 dark:border-gray-800 dark:bg-gray-950">
-      <p class="mr-2 text-sm font-bold tracking-tight">Glyphic</p>
+  <div class="flex h-screen flex-col bg-gray-50 text-gray-900 dark:bg-[#202020] dark:text-gray-100">
+    <header data-tauri-drag-region class="flex h-12 shrink-0 items-center gap-1 bg-gray-50 pl-20 pr-3 dark:bg-[#202020]">
+      <button class="mr-2 text-sm font-bold tracking-tight" @click="view = 'create'">Glyphic</button>
       <button v-for="n in NAV" :key="n.id"
         class="rounded px-3 py-1.5 text-sm"
         :class="view === n.id ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'"
