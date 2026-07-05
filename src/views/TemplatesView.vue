@@ -8,7 +8,7 @@ import { useSettingsStore } from "../stores/settings";
 import { renderSvg } from "../engine/render";
 import { isValidStyle } from "../lib/validate-style";
 import { showToast } from "../lib/toast";
-import { BODY_SHAPES, type BodyShape, type QrStyle, type Template } from "../engine/types";
+import type { QrStyle, Template } from "../engine/types";
 import { queryTemplates, TEMPLATE_SORT_LABELS, type TemplateSort } from "../lib/library-query";
 
 const library = useLibraryStore();
@@ -23,14 +23,9 @@ const deleteBtnClass = "col-span-2 rounded border border-red-200 px-2.5 py-1 tex
 const controlClass = "rounded border border-gray-300 px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100";
 
 const search = ref("");
-const bodyShape = ref<BodyShape | "all">("all");
 const sort = ref<TemplateSort>("name-asc");
 const visibleTemplates = computed(() =>
-  queryTemplates(library.templates, { search: search.value, bodyShape: bodyShape.value, sort: sort.value }));
-
-function shapeLabel(shape: BodyShape): string {
-  return shape.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
-}
+  queryTemplates(library.templates, { search: search.value, sort: sort.value }));
 
 onMounted(() => library.refresh());
 
@@ -133,10 +128,6 @@ async function importTemplate() {
     <div v-if="library.templates.length" class="mb-4 flex flex-wrap items-center gap-2">
       <input v-model="search" type="search" placeholder="Search templates…"
         :class="controlClass" class="min-w-0 flex-1 basis-40" />
-      <select v-model="bodyShape" :class="controlClass" aria-label="Filter by body shape">
-        <option value="all">All shapes</option>
-        <option v-for="shape in BODY_SHAPES" :key="shape" :value="shape">{{ shapeLabel(shape) }}</option>
-      </select>
       <select v-model="sort" :class="controlClass" aria-label="Sort by">
         <option v-for="(label, value) in TEMPLATE_SORT_LABELS" :key="value" :value="value">{{ label }}</option>
       </select>

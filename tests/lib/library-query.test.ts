@@ -25,7 +25,6 @@ const TEMPLATES: Template[] = [
   template("t2", "arctic", "2026-01-03T00:00:00.000Z"),
   template("t3", "Classic", "2026-01-01T00:00:00.000Z", "2026-01-04T00:00:00.000Z"),
 ];
-TEMPLATES[0].style.bodyShape = "dots";
 
 describe("queryHistory", () => {
   it("defaults to newest first with no filters", () => {
@@ -73,39 +72,32 @@ describe("queryHistory", () => {
 
 describe("queryTemplates", () => {
   it("sorts by name ascending and descending, case-insensitively", () => {
-    expect(queryTemplates(TEMPLATES, { search: "", bodyShape: "all", sort: "name-asc" }).map((t) => t.id))
+    expect(queryTemplates(TEMPLATES, { search: "", sort: "name-asc" }).map((t) => t.id))
       .toEqual(["t2", "t1", "t3"]);
-    expect(queryTemplates(TEMPLATES, { search: "", bodyShape: "all", sort: "name-desc" }).map((t) => t.id))
+    expect(queryTemplates(TEMPLATES, { search: "", sort: "name-desc" }).map((t) => t.id))
       .toEqual(["t3", "t1", "t2"]);
   });
 
   it("sorts by creation date", () => {
-    expect(queryTemplates(TEMPLATES, { search: "", bodyShape: "all", sort: "newest" }).map((t) => t.id))
+    expect(queryTemplates(TEMPLATES, { search: "", sort: "newest" }).map((t) => t.id))
       .toEqual(["t2", "t1", "t3"]);
-    expect(queryTemplates(TEMPLATES, { search: "", bodyShape: "all", sort: "oldest" }).map((t) => t.id))
+    expect(queryTemplates(TEMPLATES, { search: "", sort: "oldest" }).map((t) => t.id))
       .toEqual(["t3", "t1", "t2"]);
   });
 
   it("sorts by most recently updated", () => {
-    expect(queryTemplates(TEMPLATES, { search: "", bodyShape: "all", sort: "updated" }).map((t) => t.id))
+    expect(queryTemplates(TEMPLATES, { search: "", sort: "updated" }).map((t) => t.id))
       .toEqual(["t1", "t3", "t2"]);
   });
 
-  it("filters by body shape", () => {
-    expect(queryTemplates(TEMPLATES, { search: "", bodyShape: "dots", sort: "name-asc" }).map((t) => t.id))
-      .toEqual(["t1"]);
-    expect(queryTemplates(TEMPLATES, { search: "", bodyShape: "square", sort: "name-asc" }).map((t) => t.id))
-      .toEqual(["t2", "t3"]);
-  });
-
-  it("matches search case-insensitively and combines with shape filter", () => {
-    expect(queryTemplates(TEMPLATES, { search: "cLaS", bodyShape: "all", sort: "name-asc" }).map((t) => t.id))
+  it("matches search case-insensitively", () => {
+    expect(queryTemplates(TEMPLATES, { search: "cLaS", sort: "name-asc" }).map((t) => t.id))
       .toEqual(["t3"]);
-    expect(queryTemplates(TEMPLATES, { search: "classic", bodyShape: "dots", sort: "name-asc" }))
+    expect(queryTemplates(TEMPLATES, { search: "no such template", sort: "name-asc" }))
       .toEqual([]);
   });
 
   it("handles empty input", () => {
-    expect(queryTemplates([], { search: "x", bodyShape: "all", sort: "newest" })).toEqual([]);
+    expect(queryTemplates([], { search: "x", sort: "newest" })).toEqual([]);
   });
 });
